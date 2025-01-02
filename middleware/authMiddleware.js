@@ -2,7 +2,14 @@ import jwt from 'jsonwebtoken';
 import asyncHandler from './asyncHandler.js';
 
 const authMiddleware = asyncHandler( async (req, res, next) => {
-    const token = req.cookies.authToken; // Retrieve the cookie
+    let token;
+    if (req.cookies && req.cookies.authToken) {
+        token = req.cookies.authToken;
+    }
+    
+    else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+        token = req.headers.authorization.split(" ")[1];
+    }
     if (token) {
      try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
@@ -31,6 +38,7 @@ const authMiddleware = asyncHandler( async (req, res, next) => {
 
 const homeMiddleware = asyncHandler(async (req, res, next) => {
     const token = req.cookies.authToken; // Retrieve the cookie
+
     if (!token) {
         req.isAuthenticated = false; // Mark as not authenticated
         return next();

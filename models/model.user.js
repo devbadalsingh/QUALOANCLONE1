@@ -108,7 +108,7 @@ const userSchema = new mongoose.Schema(
       type: incomeDetailsSchema,
     },
 
-    isAadhaarVerify: {
+    isAadhaarVerified: {
       type: Boolean,
       default: false,
     },
@@ -116,7 +116,7 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isPANVerify: {
+    isPANVerified: {
       type: Boolean,
       default: false,
     },
@@ -132,7 +132,12 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    isMobileVerify: {
+    isMobileVeried: {
+      type: Boolean,
+      default: false,
+    },
+    
+    isCompleteRegistration:{
       type: Boolean,
       default: false,
     },

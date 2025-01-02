@@ -8,6 +8,7 @@ import { panVerify } from "../utils/pan.js";
 import { otpSent } from '../utils/smsGateway.js';
 import OTP from '../models/model.otp.js';
 import { uploadFilesToS3, deleteFilesFromS3 } from '../config/uploadFilesToS3.js';
+import Application from '../models/model.application.js';
 
 
 const aadhaarOtp = asyncHandler(async (req, res) => {
@@ -52,8 +53,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
     // Check if the response status code is 422 which is for failed verification
     if (response.code === "200") {
-        const details = response.model;
-        console.log("aadhaar details --->" , details);    
+        const details = response.model;   
         const name = details.name.split(" ");
         const aadhaarNumber = details.adharNumber.slice(-4);
         const uniqueId = `${name[0].toLowerCase()}${aadhaarNumber}`;
@@ -90,10 +90,10 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
         // generate token 
         const token = generateToken(res, userDetails._id)
+        console.log("token--->" , token)
         // Respond with a success message
         return res.json({
             success: true,
-            details,
             token: token
         });
     }
@@ -125,18 +125,15 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
         throw new Error("Invalid Indian mobile number");
     }
 
-    // Generate a new random OTP
     const otp = generateRandomNumber();
-
-    // Send OTP via the OTP service
     const result = await otpSent(mobile, otp);
 
     if (result.data.ErrorMessage === "Success") {
         // Update or create the OTP record for the mobile number
         await OTP.findOneAndUpdate(
-            { mobile }, // Search by mobile number
-            { fName, lName, otp, createdAt: Date.now() }, // Update data
-            { upsert: true, new: true } // Create a new record if not found
+            { mobile },
+            {otp},
+            { upsert: true, new: true }
         );
 
         return res.json({ success: true, message: "OTP sent successfully!!" });
@@ -178,6 +175,16 @@ export const verifyOtp = asyncHandler(async (req, res) => {
             message: "Invalid OTP. Please try again.",
         });
     }
+
+    const otpAge = Date.now() - new Date(otpRecord.updatedAt).getTime();
+    if (otpAge > 10 * 60 * 1000) {
+        return res.status(400).json({
+            success: false,
+            message: "OTP has expired. Please request a new OTP.",
+        });
+    }
+    otpRecord.otp = "";
+    await otpRecord.save(); // Save the updated OTP record
 
     // update in user model
     await User.findByIdAndUpdate(
@@ -347,6 +354,7 @@ const uploadProfile = asyncHandler(async (req, res) => {
 
     user.profileImage = uploadResult.Location;
     user.isUploadProfile = true;
+    user.isCompleteRegistration = true; 
     await user.save();
 
     res.status(200).json({
@@ -403,12 +411,42 @@ const getDashboardDetails = asyncHandler(async (req, res) => {
     }
 
     const data = {
-       
+        isCompleteRegistration: user.isCompleteRegistration,
+        isAadhaarDetailsSaved: user.isAadhaarDetailsSaved,
+        isMobileVerified: user.isMobileVeried,
+        isPanVerified: user.isPANVerified,
+        isPersonalDetailsSave: user.isPersonalDetailsSave,
+        isSaveAddress: user.isSaveAddress,
+        isSaveIncomedetails: user.isSaveIncomedetails,
+        isUploadProfile: user.isUploadProfile
+
     }
+
     return res.status(200).json({
         success: true,
         data
     })
 })
 
-export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails }
+const checkLoanElegblity = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const user = await User .findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    if(!user.isCompleteRegistration){
+        return res.status(400).json({ success: false, message: "Please Complete Profile First" , isElegble: user.isCompleteRegistration});
+    }
+
+    const alredyApplied = await Application.findOne({userId});
+    if(alredyApplied && alredyApplied.status === "PENDING"){
+        return res.status(400).json({ success: false, message: "You have already applied for loan" , isElegble: false});
+    }
+
+    return res.status(200).json({ success: true, message: "You are eligible for loan" , isElegble: true});  
+
+})
+
+
+export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails,checkLoanElegblity }

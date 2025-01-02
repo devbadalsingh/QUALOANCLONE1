@@ -7,6 +7,7 @@ import morgan from "morgan";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 import  userRoute  from "./routes/route.user.js";
 import verifyRoute from "./routes/route.verify.js";
+import applicationRoute from "./routes/route.application.js";
 import { homeMiddleware } from "./middleware/authMiddleware.js";    
 
 
@@ -44,6 +45,7 @@ app.get('/api', homeMiddleware , (req, res) => {
 //  API routes
 app.use("/api/user", userRoute);
 app.use("/api/verify", verifyRoute);
+app.use("/api/application", applicationRoute);
 
 
 
@@ -53,5 +55,5 @@ app.use(notFound);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
+    console.log(`Server is running on   http://localhost:${PORT}`);
 });

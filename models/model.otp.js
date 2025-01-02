@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 
 const otpSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    mobile:{type:String,required:true},
     otp: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now, required: true },
-    expiresAt: { type: Date, required: true },
+    
+},
+{
+    timestamps: true,
 });
 
 // Create a TTL index on the `expiresAt` field

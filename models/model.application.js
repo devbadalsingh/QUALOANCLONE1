@@ -49,6 +49,11 @@ const employeeInfoSchema = new mongoose.Schema({
 })
 const applicationSchema = new mongoose.Schema({
 
+    userId:{
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+    },
 
     principal:{
         type: Number,
@@ -101,11 +106,16 @@ const applicationSchema = new mongoose.Schema({
     isDisbursalDetailsSave: {
         type: Boolean,
         default: false
+    },
+    status:{
+        type: String,
+        default: 'PENDING',
+        enum: ['PENDING', 'APPROVED', 'REJECTED']
     }
 
 
 });
 
-const Application = mongoose.model("User", applicationSchema);
+const Application = mongoose.model("Application", applicationSchema);
 
 export default Application;
