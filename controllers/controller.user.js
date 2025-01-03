@@ -26,7 +26,7 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
     const response = await generateAadhaarOtp(aadhaar);
     // res.render('otpRequest',);
 
-    res.json({
+    return res.json({
         success: true,
         transactionId: response.data.model.transactionId,
         fwdp: response.data.model.fwdp,
@@ -63,13 +63,15 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
         });
 
         if (existingAadhaar) {
-            await User.findOneAndUpdate({ aadarNumber: details.adharNumber },
+            const UserData = await User.findOneAndUpdate({ aadarNumber: details.adharNumber },
                 { isAadhaarDetailsSaved: true },
                 { new: true }
             );
+            const token = generateToken(res, UserData._id)
+            console.log("token--->" , token)
             return res.json({
                 success: true,
-                details,
+                token:token,
             });
         }
 
@@ -90,7 +92,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
         // generate token 
         const token = generateToken(res, userDetails._id)
-        console.log("token--->" , token)
+        console.log("token---->" , token)
         // Respond with a success message
         return res.json({
             success: true,

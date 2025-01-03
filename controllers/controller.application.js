@@ -5,6 +5,7 @@ import Application from '../models/model.application.js';
 
 
 const calculateLoan = asyncHandler(async (req, res) => {});
+const addEmploymentInfo = asyncHandler(async (req, res) => {});
 
 
-export {calculateLoan}
+export {calculateLoan,addEmploymentInfo}
