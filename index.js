@@ -35,10 +35,16 @@ app.use(morgan("dev")); // Log HTTP requests
 
 // main routes
 app.get('/api', homeMiddleware , (req, res) => {
+    console.log(req.user, "req.user");
+    console.log(req.isAuthenticated,"req.isAuthenticated");
+    const data = {
+        fullName: req.user?.personalDetails?.fullName || null,
+        image: req.user?.profileImage || null,
+    }
     if (req.isAuthenticated) {
-        res.json({ message: "Welcome back, user!", user: req.user });
+        return res.json({ message: "Welcome back, user!", user: data });
     } else {
-        res.json({ message: "Welcome to the public main page!" });
+       return  res.json({ message: "Welcome to the public main page!" });
     }
 });
 
