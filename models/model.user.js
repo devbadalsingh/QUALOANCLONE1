@@ -77,7 +77,7 @@ const incomeDetailsSchema = new mongoose.Schema({
   incomeMode:{
     type: String,
     required: true,
-    enum: ["CASH", "BANK", "cheque"],
+    enum: ["CASH", "BANK", "CHEQUE", "OTHERS"],
   }
 });
 
@@ -101,46 +101,23 @@ const userSchema = new mongoose.Schema(
     personalDetails: {
       type: personalDetailsSchema,
     },
-    residence: {
+    residenceDetails: {
       type: residenceSchema,
     },
     incomeDetails: {
       type: incomeDetailsSchema,
     },
 
-    isAadhaarVerified: {
-      type: Boolean,
-      default: false,
+    registrationStatus: {
+      type: String,
+      enum: ["NEW","AADAR_VERIFIED", "MOBILE_VERIFIED", "PAN_VERIFIED","PERSONAL_DETAILS", "CURRENT_RESIDENCE", "INCOME_DETAILS", "UPLOAD_PROFILE","COMPLETE_DETAILS"],
+      default: "NEW",
     },
-    isPersonalDetailsSave: {
-      type: Boolean,
-      default: false,
-    },
-    isPANVerified: {
-      type: Boolean,
-      default: false,
-    },
-    isSaveIncomedetails: {
-      type: Boolean,
-      default: false,
-    },
-    isSaveAddress: {
-      type: Boolean,
-      default: false
-    },
-    isUploadProfile: {
-      type: Boolean,
-      default: false,
-    },
-    isMobileVeried: {
-      type: Boolean,
-      default: false,
-    },
-    
     isCompleteRegistration:{
-      type: Boolean,
-      default: false,
+      type : Boolean,
+      default : false
     },
+
     isActive: {
       type: Boolean,
       default: true,

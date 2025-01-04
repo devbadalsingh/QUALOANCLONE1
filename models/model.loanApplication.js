@@ -47,67 +47,85 @@ const employeeInfoSchema = new mongoose.Schema({
     },
 
 })
+
+const disbursalBankSchema = new mongoose.Schema({
+    bankName: {
+        type: String,
+        required: true,
+    },
+    accountNumber: {
+        type: String,
+        required: true,
+    },
+    ifscCode: {
+        type: String,
+        required: true,
+    },
+    accountType: {
+        type: String,
+        required: true,
+        enum: ['SAVINGS', 'CURRENT']
+    },
+})
+
+const loanDetailsSchema = new mongoose.Schema({
+    principal: {
+        type: Number,
+        required: true
+    },
+    EMI: {
+        type: Number,
+        required: true
+    },
+    totalPayble: {
+        type: Number,
+        required: true
+    },
+    intrestPerMonth: {
+        type: Number,
+        required: true
+    },
+    processingFee: {
+        type: Number,
+        required: true
+    },
+    tenureMonth: {
+        type: Number,
+        required: true
+    },
+    loanPurpose: {
+        type: String,
+        required: true,
+        enum: ['TRAVEL', 'MEDICAL', 'ACADEMICS', 'OBLIGATIONS', 'FESTIVAL', 'PURCHASE', 'OTHERS']
+    },
+})
+
 const applicationSchema = new mongoose.Schema({
 
-    userId:{
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: "User"
     },
 
-    principal:{
-        type: Number,
-        required: true
-    },
-    EMI:{
-        type: Number,
-        required: true
-    },
-    totalPayble:{
-        type: Number,
-        required: true
-    },
-    intrestPerMonth:{
-        type: Number,
-        required: true
-    },
-    processingFee:{
-        type: Number,
-        required: true
-    },
-    tenureMonth:{
-        type: Number,
-        required: true
-    },
-    loanPurpose:{
+    loanDetails: loanDetailsSchema,
+    employeeDetails: employeeInfoSchema,
+    disbursalBankDetails :disbursalBankSchema,
+
+    progressStatus: {
         type: String,
-        required: true,
-        enum: ['TRAVEL', 'MEDICAL', 'ACADEMICS', 'OBLIGATIONS', 'FESTIVAL', 'PURCHASE', 'OTHERS']
+        default: "CALCULATED",
+        enum: [
+            "CALCULATED",
+            "EMPLOYMENT_DETAILS_SAVED",
+            "BANK_STATEMENT_FETCHED",
+            "DOCUMENTS_SAVED",
+            "DISBURSAL_DETAILS_SAVED",
+            "COMPLETED",
+        ],
     },
 
-    employeeDetails: employeeInfoSchema,
-    
-    isLoanCalculate: {
-        type: Boolean,
-        default: true
-    },
-    isEmploymentDetailsSave: {
-        type: Boolean,
-        default: false
-    },
-    isfetchBankStatement: {
-        type: Boolean,
-        default: false
-    },
-    isDocumentionSave: {
-        type: Boolean,
-        default: false
-    },
-    isDisbursalDetailsSave: {
-        type: Boolean,
-        default: false
-    },
-    status:{
+    applicationStatus: {
         type: String,
         default: 'PENDING',
         enum: ['PENDING', 'APPROVED', 'REJECTED']
@@ -116,6 +134,6 @@ const applicationSchema = new mongoose.Schema({
 
 });
 
-const Application = mongoose.model("Application", applicationSchema);
+const LoanApplication = mongoose.model("loanApplication", applicationSchema);
 
-export default Application;
+export default LoanApplication;

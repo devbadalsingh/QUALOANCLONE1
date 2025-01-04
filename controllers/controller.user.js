@@ -8,7 +8,8 @@ import { panVerify } from "../utils/pan.js";
 import { otpSent } from '../utils/smsGateway.js';
 import OTP from '../models/model.otp.js';
 import { uploadFilesToS3, deleteFilesFromS3 } from '../config/uploadFilesToS3.js';
-import Application from '../models/model.application.js';
+import LoanApplication from '../models/model.loanApplication.js';
+import { trusted } from 'mongoose';
 
 
 const aadhaarOtp = asyncHandler(async (req, res) => {
@@ -53,7 +54,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
     // Check if the response status code is 422 which is for failed verification
     if (response.code === "200") {
-        const details = response.model;   
+        const details = response.model;
         const name = details.name.split(" ");
         const aadhaarNumber = details.adharNumber.slice(-4);
         const uniqueId = `${name[0].toLowerCase()}${aadhaarNumber}`;
@@ -68,10 +69,10 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
                 { new: true }
             );
             const token = generateToken(res, UserData._id)
-            console.log("token--->" , token)
+            console.log("token--->", token)
             return res.json({
                 success: true,
-                token:token,
+                token: token,
             });
         }
 
@@ -80,7 +81,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
             "personalDetails.fullName": details.name,
             "personalDetails.dob": details.dob,
             "personalDetails.gender": details.gender,
-            isAadhaarDetailsSaved: true,
+            registrationStatus: "AADAR_VERIFIED",
         }
         );
 
@@ -92,7 +93,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
         // generate token 
         const token = generateToken(res, userDetails._id)
-        console.log("token---->" , token)
+        console.log("token---->", token)
         // Respond with a success message
         return res.json({
             success: true,
@@ -119,12 +120,15 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
 
 const mobileGetOtp = asyncHandler(async (req, res) => {
-    const { mobile } = req.body;
+    const { mobile } = req.params;
+    if (!mobile) {
+        return res.status(400).json({ message: "Mobile number is required" });
+    }
 
     const indianMobileNumberRegex = /^[6-9]\d{9}$/;
     if (!indianMobileNumberRegex.test(mobile)) {
-        res.status(400);
-        throw new Error("Invalid Indian mobile number");
+        return res.status(400).json({ message: "Mobile number is not formated" });
+
     }
 
     const otp = generateRandomNumber();
@@ -134,11 +138,11 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
         // Update or create the OTP record for the mobile number
         await OTP.findOneAndUpdate(
             { mobile },
-            {otp},
+            { otp },
             { upsert: true, new: true }
         );
 
-        return res.json({ success: true, message: "OTP sent successfully!!" });
+        return res.status(200).json({ success: true, message: "OTP sent successfully!!" });
     }
 
     return res
@@ -147,8 +151,9 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
 });
 
 
-export const verifyOtp = asyncHandler(async (req, res) => {
+const verifyOtp = asyncHandler(async (req, res) => {
     const { mobile, otp } = req.body;
+    console.log(req.user._id, "req.user._id")
 
     // Check if both mobile and OTP are provided
     if (!mobile && !otp) {
@@ -159,7 +164,8 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     }
 
     // Find the OTP record in the database
-    const otpRecord = await OTP.findOne({ mobile });
+    const otpRecord = await OTP.findOne({ mobile: mobile });
+    console.log(otpRecord, "otpRecord")
 
     // Check if the record exists
     if (!otpRecord) {
@@ -189,14 +195,15 @@ export const verifyOtp = asyncHandler(async (req, res) => {
     await otpRecord.save(); // Save the updated OTP record
 
     // update in user model
-    await User.findByIdAndUpdate(
+    const result = await User.findByIdAndUpdate(
         req.user._id,
-        { isMobileVerified: true, "personalDetails.mobile": mobile },
+        { registrationStatus: "MOBILE_VERIFIED", "personalDetails.mobile": mobile },
         { new: true }
     );
+    console.log(result, "result")
 
     // OTP matches, verification successful
-    return res.json({
+    return res.status(200).json({
         success: true,
         message: "OTP verified successfully!",
     });
@@ -206,8 +213,8 @@ export const verifyOtp = asyncHandler(async (req, res) => {
 const verifyPan = asyncHandler(async (req, res) => {
 
     const { pan } = req.params;
-    const id = req.user._id
-    console.log(id, "userId")
+    const userId = req.user._id
+    console.log(userId, "userId")
 
     // Validate that aaadhaar is present in the leads
     if (!pan) {
@@ -224,7 +231,7 @@ const verifyPan = asyncHandler(async (req, res) => {
     }
 
     // Call the get panDetails Function
-    const response = await panVerify(id, pan);
+    const response = await panVerify(userId, pan);
 
     if (response.result_code !== 101) {
         res.status(400);
@@ -233,8 +240,8 @@ const verifyPan = asyncHandler(async (req, res) => {
 
     // update in user table 
     await User.findByIdAndUpdate(
-        id,
-        { isPanVerified: true, PAN: pan },
+        userId,
+        { registrationStatus: "PAN_VERIFIED", PAN: pan },
         { new: true }
     );
 
@@ -252,16 +259,31 @@ const verifyPan = asyncHandler(async (req, res) => {
 
 const personalInfo = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { personalDetails } = req.body;
+    const personalDetails = req.body;
+    if (!personalDetails) {
+        return res.status(400).json({ message: "Personal details are required" });
+    }
+    if (personalDetails.personalEmail) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(personalDetails.personalEmail)) {
+            return res.status(400).json({ message: "Email should be in correct format" });
+        }
+    }
+
+    const userDetails = await User.findById(userId);
+
+    if (!userDetails) {
+        console.log({ message: "User not found" });
+        return res.status(404).json({ message: "User not found" });
+    }
 
 
     const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
-            $set: {
-                personalDetails,
-                isPersonalDetailsSave: true
-            }
+            personalDetails,
+            registrationStatus: "PERSONAL_DETAILS"
+
         },
         { new: true }
     );
@@ -270,20 +292,30 @@ const personalInfo = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "Personal details updated successfully", user: updatedUser });
+    return res.status(200).json({ message: "Personal details updated successfully", user: updatedUser.personalDetails });
 
 });
 
 const currentResidence = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { residence } = req.body;
+    const residenceDetails = req.body;
+
+    const userDetails = await User.findById(userId);
+
+    if (!userDetails) {
+        console.log({ message: "User not found" });
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    // Merge the new details with existing ones
+
 
     const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
             $set: {
-                residence,
-                isSaveAddress: true
+                residenceDetails,
+                registrationStatus: "CURRENT_RESIDENCE"
             }
         },
         { new: true }
@@ -293,13 +325,26 @@ const currentResidence = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "Personal details updated successfully", user: updatedUser });
+    res.status(200).json({ message: "Personal details updated successfully", residenceDetails: updatedUser.residenceDetails });
 
 })
 
 const addIncomeDetails = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const { incomeDetails } = req.body;
+    const incomeDetails = req.body;
+
+    const [day, month, year] = incomeDetails.nextSalaryDate.split("-").map(Number);
+    const validDate = new Date(year, month - 1, day);
+    console.log("validDate", validDate);
+    incomeDetails.nextSalaryDate = validDate;
+
+    const userDetails = await User.findById(userId);
+
+    if (!userDetails) {
+        console.log({ message: "User not found" });
+        return res.status(404).json({ message: "User not found" });
+    }
+
 
     const updatedUser = await
         User.findByIdAndUpdate(
@@ -307,7 +352,7 @@ const addIncomeDetails = asyncHandler(async (req, res) => {
             {
                 $set: {
                     incomeDetails,
-                    isSaveIncomedetails: true
+                    registrationStatus: "INCOME_DETAILS"
                 }
             },
             { new: true }
@@ -317,55 +362,59 @@ const addIncomeDetails = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "Income details updated successfully", user: updatedUser });
+    res.status(200).json({ message: "Income details updated successfully", incomeDetails: updatedUser.incomeDetails });
 })
 
 const uploadProfile = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    if (!req.files) {
+
+    if (!req.files || !req.files.profilePicture) {
         res.status(400);
-        throw new Error("No files uploaded");
+        return res.json({ message: "No profile picture uploaded" });
     }
 
-    const profilePictureUpload = req.files.profilePicture && req.files.profilePicture.length > 0;
+    const profilePictureFile = req.files.profilePicture[0];
 
-    if (profilePictureUpload) {
-        return res.status(400).json({
-            message:
-                "You cannot upload both aadhaar documents and eAadhaar.",
-        });
+    // Check if the file is an image
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const fileMimeType = profilePictureFile.mimetype;
+
+    if (!allowedMimeTypes.includes(fileMimeType)) {
+        return res.status(400).json({ message: "Uploaded file is not an image. Please upload an image file." });
     }
+
     const fileBuffer = profilePictureFile.buffer;
     const fileName = `users/${userId}/profile-picture-${Date.now()}.${profilePictureFile.mimetype.split("/")[1]}`;
 
-
-    // Find the user
     const user = await User.findById(userId);
+
     if (!user) {
-        res.status(404);
-        throw new Error("User not found");
+        console.log({ message: "User not found" });
+        return res.status(404).json({ message: "User not found" });
     }
 
     // If the user already has a profile picture, delete the old one from S3
     if (user.profileImage) {
-        const oldKey = user.profileImage.split("/").slice(-1)[0]; // Extract S3 key from the URL
+        const oldKey = user.profileImage.split("/").slice(-1)[0];
+        console.log("oldKey", oldKey);
         await deleteFilesFromS3(`users/${userId}/${oldKey}`);
     }
 
+    // Upload the new profile picture to S3
     const uploadResult = await uploadFilesToS3(fileBuffer, fileName);
 
+    // Save the profile image URL and update the user's status
     user.profileImage = uploadResult.Location;
-    user.isUploadProfile = true;
-    user.isCompleteRegistration = true; 
+    user.registrationStatus = "UPLOAD_PROFILE";
+    user.isCompleteRegistration = true;
     await user.save();
 
-    res.status(200).json({
+    // Return the response
+    return res.status(200).json({
         message: "Profile picture uploaded successfully",
         profileImageUrl: user.profileImage,
     });
-
 });
-
 
 const getProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id);
@@ -378,7 +427,7 @@ const getProfile = asyncHandler(async (req, res) => {
         name: user.personalDetails.fullName
     }
 
-    res.json({
+    res.status(200).json({
         success: true,
         data
 
@@ -392,9 +441,9 @@ const getProfileDetails = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
-    const data  = {
+    const data = {
         personalDetails: user.personalDetails,
-        residence: user.residence,
+        residence: user.residenceDetails,
         incomeDetails: user.incomeDetails,
         profileImage: user.profileImage,
 
@@ -402,53 +451,67 @@ const getProfileDetails = asyncHandler(async (req, res) => {
     return res.status(200).json({
         success: true,
         data
-})
+    })
 })
 
 const getDashboardDetails = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
+    // If the registration is incomplete, return the registration status
+    if (!user.isCompleteRegistration) {
+        return res.status(200).json({
+            success: true,
+            message: "Registration incomplete",
+            isRegistration: true,
+            registrationStatus: user.registrationStatus,
+        });
+    }
+
+    // If the registration is complete, fetch the loan application status
+    const loanApplication = await LoanApplication.findOne({ userId })
+
+    if (!loanApplication) {
+        return res.status(200).json({
+            success: true,
+            message: "No loan application found",
+        });
+    }
+
+    // Return the application status and progress phase
+    return res.status(200).json({
+        success: true,
+        message: "Application status fetched successfully",
+        isRegistration: false,
+        applicationStatus: loanApplication.applicationStatus,
+        progressStatus: loanApplication.progressStatus,
+    });
+});
+
+
+const checkLoanElegblity = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
     }
 
-    const data = {
-        isCompleteRegistration: user.isCompleteRegistration,
-        isAadhaarDetailsSaved: user.isAadhaarDetailsSaved,
-        isMobileVerified: user.isMobileVeried,
-        isPanVerified: user.isPANVerified,
-        isPersonalDetailsSave: user.isPersonalDetailsSave,
-        isSaveAddress: user.isSaveAddress,
-        isSaveIncomedetails: user.isSaveIncomedetails,
-        isUploadProfile: user.isUploadProfile
-
+    if (!user.isCompleteRegistration) {
+        return res.status(200).json({ message: "Please Complete Profile First", isElegble: user.isCompleteRegistration });
     }
 
-    return res.status(200).json({
-        success: true,
-        data
-    })
-})
-
-const checkLoanElegblity = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
-    const user = await User .findById(userId);
-    if (!user) {
-        return res.status(404).json({ message: "User not found" });
+    const alredyApplied = await LoanApplication.findOne({ userId });
+    if (alredyApplied && alredyApplied.status === "PENDING") {
+        return res.status(200).json({ message: "You have already applied for loan", isElegble: false });
     }
 
-    if(!user.isCompleteRegistration){
-        return res.status(400).json({ success: false, message: "Please Complete Profile First" , isElegble: user.isCompleteRegistration});
-    }
-
-    const alredyApplied = await Application.findOne({userId});
-    if(alredyApplied && alredyApplied.status === "PENDING"){
-        return res.status(400).json({ success: false, message: "You have already applied for loan" , isElegble: false});
-    }
-
-    return res.status(200).json({ success: true, message: "You are eligible for loan" , isElegble: true});  
+    return res.status(200).json({ message: "You are eligible for loan", isElegble: true });
 
 })
 
 
-export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails,checkLoanElegblity }
+export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails, checkLoanElegblity, verifyOtp }

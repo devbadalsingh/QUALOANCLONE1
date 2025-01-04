@@ -4,8 +4,8 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 
-router.post("/mobile/get-otp",authMiddleware, mobileGetOtp);  
-router.post("/mobile/verify-otp",authMiddleware, verifyOtp); 
-router.post("/panVerify",authMiddleware, verifyPan);
+router.post("/mobile/get-otp/:mobile",authMiddleware, mobileGetOtp);  
+router.post("/mobile/verify-otp",authMiddleware, verifyOtp);  
+router.post("/verifyPAN/:pan",authMiddleware, verifyPan);  
 
 export default router;

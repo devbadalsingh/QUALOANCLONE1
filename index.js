@@ -7,7 +7,7 @@ import morgan from "morgan";
 import { notFound, errorHandler } from "./middleware/errorHandler.js";
 import  userRoute  from "./routes/route.user.js";
 import verifyRoute from "./routes/route.verify.js";
-import applicationRoute from "./routes/route.application.js";
+import loanApplicationRoute from "./routes/route.application.js";
 import { homeMiddleware } from "./middleware/authMiddleware.js";    
 
 
@@ -33,7 +33,7 @@ app.use(homeMiddleware); // Auth middleware
 // Logging middleware (optional)
 app.use(morgan("dev")); // Log HTTP requests
 
-// main routes
+// main routes (Done)
 app.get('/api', homeMiddleware , (req, res) => {
     console.log(req.user, "req.user");
     console.log(req.isAuthenticated,"req.isAuthenticated");
@@ -51,10 +51,7 @@ app.get('/api', homeMiddleware , (req, res) => {
 //  API routes
 app.use("/api/user", userRoute);
 app.use("/api/verify", verifyRoute);
-app.use("/api/application", applicationRoute);
-
-
-
+app.use("/api/loanApplication", loanApplicationRoute);
 
 // Error handling middleware
 app.use(notFound);
