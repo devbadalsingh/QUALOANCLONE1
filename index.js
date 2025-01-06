@@ -20,8 +20,9 @@ const app = express();
 // Middleware
 // CORS configuration
 var corsOption = {
-    origin: `http://localhost:${PORT}`,
+    origin: '*',
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials : true
 };
 
 app.use(cors(corsOption));
@@ -42,9 +43,9 @@ app.get('/api', homeMiddleware , (req, res) => {
         image: req.user?.profileImage || null,
     }
     if (req.isAuthenticated) {
-        return res.json({ message: "Welcome back, user!", user: data });
+        return res.json({ message: "Welcome back, user!",isUserAuthentic: req.isAuthenticated, user: data });
     } else {
-       return  res.json({ message: "Welcome to the public main page!" });
+       return  res.json({ message: "Welcome to the public main page!" , isUserAuthentic: req.isAuthenticated });
     }
 });
 

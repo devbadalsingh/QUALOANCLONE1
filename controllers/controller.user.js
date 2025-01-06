@@ -275,14 +275,20 @@ const verifyPan = asyncHandler(async (req, res) => {
     );
 
     // add pan details in panDetails table
-
-    // await  PanDetails.create(
-    //     data : response.result
-    // );
+    await PanDetails.findOneAndUpdate(
+        {
+            $or: [
+                { "data.PAN": pan }, // Check if data.PAN matches
+                { "data.pan": pan }, // Check if data.pan matches
+            ],
+        },
+        { data:response.result }, // Update data
+        { upsert: true, new: true } // Create a new record if not found
+    );
 
 
     // Now respond with status 200 with JSON success true
-    return res.json({
+    return res.status(200).json({
         data: response.result,
     });
 

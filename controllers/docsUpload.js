@@ -1,0 +1,42 @@
+import asyncHandler from "../middleware/asyncHandler.js";
+import Documents from "../models/model.document.js";
+import { uploadDocs } from "../utils/docsUploadAndFetch.js";
+import User from "../models/model.user.js"
+
+export const uploadDocuments = asyncHandler(async (req, res) => {
+    const userId = req.user._id
+
+    const user = await User.findById(userId)
+    if(!user){
+        return res.status(400).json({message:"User not Found"})
+    }
+    const  pan  = user.PAN;
+    const remarks = req.body.remarks;
+
+    if (!req.files) {
+        return res.status(400).json({ message: "No files uploaded" });
+    }
+
+    if (!pan) {
+        return res.status(400).json({ message: "PAN is required" });
+    }
+
+    // Check if a document entry exists for the given PAN
+    let docs = await Documents.findOne({ pan });
+    if (!docs) {
+        // Create a new document entry if it doesn't exist
+        docs = new Documents({
+            pan,
+            document: { singleDocuments: [], multipleDocuments: {} },
+        });
+    }
+
+    // Upload and update the documents
+    const result = await uploadDocs(docs, req.files, remarks);
+
+    if (!result.success) {
+        return res.status(400).json({ message: "Failed to store documents." });
+    }
+
+    res.json({ message: "Documents uploaded successfully", documents: result.updatedDocs });
+});

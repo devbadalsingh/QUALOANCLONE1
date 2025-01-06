@@ -21,8 +21,21 @@ const calculateLoan = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) {
-        return res.status(400).json({ message: "Invalid input" });
+        return res.status(400).json({ message: "User not found" });
     }
+
+    if(!user.isCompleteRegistration){
+        return res.status(400).json({message:"firstly please complete your registration"})
+    }
+
+    let previousLoanApplication = await LoanApplication.findOne({ userId: user._id });
+
+    if (previousLoanApplication && previousLoanApplication.applicationStatus=="PENDING"){
+        loanApplication.loanDetails = loanDetails;
+        await previousLoanApplication.save();
+        return res.status(200).json({ message: "Loan Application updated successfully" });
+    }
+
     const loanApplication = await LoanApplication.create({
         userId: user._id,
         loanDetails
@@ -32,7 +45,7 @@ const calculateLoan = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Loan Application not created" });
     }
 
-    return res.status(200).json({ message: "Loan Application created successfully" });
+    return res.status(200).json({ message: "Loan Application created successfully" , loanApplication : loanApplication.loanDetails});
 
 });
 
@@ -44,13 +57,31 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid input" });
     }
 
-    const loanDetails = LoanApplication.findOne({ userId: userId });
-    if (!loanDetails) {
-        return res.status(400).json({ message: "Loan Application not found" });
+    // Validation for employment information
+    const requiredFields = [
+        "workFrom",
+        "officeEmail",
+        "companyName",
+        "companyType",
+        "designation",
+        "officeAddrress_Line_1",
+        "city",
+        "state",
+        "pincode"
+    ];
+
+    const missingFields = requiredFields.filter((field) => !employeInfo[field] || employeInfo[field].trim() === "");
+
+    if (missingFields.length > 0) {
+        return res.status(400).json({
+            message: "Missing or empty required fields",
+            missingFields,
+        });
     }
 
+
     const addEmploymentInfo = await LoanApplication.findOneAndUpdate(
-        { userId: userId },
+        { userId: userId , applicationStatus:"PENDING" },
         {
             $set: {
                 employeeDetails: employeInfo,
@@ -67,14 +98,8 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
     if (!addEmploymentInfo) {
         return res.status(400).json({ message: "Employment Info not added" });
     }
-    return res.status(200).json({ message: "Employment Info added successfully" });
+    return res.status(200).json({ message: "Employment Info added successfully" , EmploymentInfo :addEmploymentInfo.employeeDetails });
 });
-
-// Pending
-const uploadBankStatement = asyncHandler(async (req, res) => { });
-
-// Pending
-const uploadDocuments = asyncHandler(async (req, res) => { });
 
 
 const disbursalBankDetails = asyncHandler(async (req, res) => {
@@ -82,11 +107,6 @@ const disbursalBankDetails = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     if (!bankDetails || !userId) {
         return res.status(400).json({ message: "Invalid input" });
-    }
-
-    const loanDetails = LoanApplication.findOne({ userId: userId });
-    if (!loanDetails) {
-        return res.status(400).json({ message: "Loan Application not found" });
     }
 
     const addBankDetails = await LoanApplication.findOneAndUpdate(
@@ -107,17 +127,19 @@ const disbursalBankDetails = asyncHandler(async (req, res) => {
     if (!addBankDetails) {
         return res.status(400).json({ message: "Bank Details not added" });
     }
-    return res.status(200).json({ message: "Bank Details added successfully" });
+    return res.status(200).json({ message: "Bank Details added successfully"  , bankDetails : addBankDetails.disbursalBankDetails});
 });
 
 
 const getApplicationStatus = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    if (!userId) {
-        return res.status(400).json({ message: "Invalid input" });
+   
+    const user = await User.findById(userId)
+    if(!user){
+        return res.status(400).json({ message: "User not found" });
     }
 
-    const loanDetails = LoanApplication.findOne({ userId: userId });
+    const loanDetails = await LoanApplication.findOne({ userId: userId , applicationStatus:"PENDING" });
     if (!loanDetails) {
         return res.status(400).json({ message: "Loan Application not found" });
     }
@@ -135,7 +157,7 @@ const getApplicationDetails = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid input" });
     }
 
-    const loanApplicationDetails = LoanApplication.findOne({ userId });
+    const loanApplicationDetails = await LoanApplication.findOne({ userId , applicationStatus:"PENDING" });
     if (!loanApplicationDetails) {
         return res.status(400).json({ message: "Loan Application not found" });
     }
@@ -144,20 +166,24 @@ const getApplicationDetails = asyncHandler(async (req, res) => {
 
     if (applicationStatus == "loanDetails") {
         data = loanApplicationDetails.loanDetails
+        return res.status(200).json({ message: "sucessfully fetched", data });
     }
 
     if (applicationStatus == "employeeDetails") {
         data = loanApplicationDetails.employeeDetails
+        return res.status(200).json({ message: "sucessfully fetched", data });
     }
 
     if (applicationStatus == "disbursalBankDetails") {
         data = loanApplicationDetails.disbursalBankDetails
+        return res.status(200).json({ message: "sucessfully fetched", data });
     }
 
+    data = loanApplicationDetails
     return res.status(200).json({ message: "sucessfully fetched", data });
 
 });
 
 
 
-export { calculateLoan, addEmploymentInfo, uploadBankStatement, uploadDocuments, disbursalBankDetails, getApplicationStatus, getApplicationDetails }
+export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails , disbursalBankDetails }
