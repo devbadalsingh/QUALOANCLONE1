@@ -9,7 +9,7 @@ import { otpSent } from '../utils/smsGateway.js';
 import OTP from '../models/model.otp.js';
 import { uploadFilesToS3, deleteFilesFromS3 } from '../config/uploadFilesToS3.js';
 import LoanApplication from '../models/model.loanApplication.js';
-import { trusted } from 'mongoose';
+import PanDetails from '../models/model.panDetails.js';
 
 
 const aadhaarOtp = asyncHandler(async (req, res) => {
@@ -23,12 +23,41 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
         });
     }
 
+    // check if aadhar is already registered then send OTP by SMS gateway
+    const userDetails = await User.findOne({ aadarNumber: aadhaar })
+    if (userDetails) {
+        if (userDetails.personalDetails && userDetails.personalDetails.mobile) {
+            const mobile = userDetails.personalDetails.mobile
+            const otp = generateRandomNumber();
+            const result = await otpSent(mobile, otp);
+
+            if (result.data.ErrorMessage === "Success") {
+                // Update or create the OTP record for the mobile number
+                await OTP.findOneAndUpdate(
+                    { mobile },
+                    { otp },
+                    { upsert: true, new: true }
+                );
+
+                return res.status(200).json({ success: true, isAlreadyRegisterdUser:true,mobileNumber:mobile, message: "OTP sent successfully to your register mobile number"});
+            }
+
+            return res
+                .status(500)
+                .json({ success: false, message: "Failed to send OTP" });
+
+        }
+    }
+
+
     // Call the function to generate OTP using Aaadhaar number
     const response = await generateAadhaarOtp(aadhaar);
     // res.render('otpRequest',);
 
     return res.json({
         success: true,
+        message:"OTP sent successfully to your Adhaar linked mobile number",
+        isAlreadyRegisterdUser:true,
         transactionId: response.data.model.transactionId,
         fwdp: response.data.model.fwdp,
         codeVerifier: response.data.model.codeVerifier,
@@ -65,7 +94,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
         if (existingAadhaar) {
             const UserData = await User.findOneAndUpdate({ aadarNumber: details.adharNumber },
-                { isAadhaarDetailsSaved: true },
+                { registrationStatus: "AADAR_VERIFIED" },
                 { new: true }
             );
             const token = generateToken(res, UserData._id)
@@ -103,19 +132,6 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
     const code = parseInt(response.code, 10);
     res.status(code);
     throw new Error(response.msg);
-
-    // // Check if the response status code is 422 which is for failed verification
-    // if (!response.success) {
-    //     res.status(response.response_code);
-    //     throw new Error(response.response_message);
-    // }
-
-    // const details = response.result;
-    // // Respond with a success message
-    // return res.json({
-    //     success: true,
-    //     details,
-    // });
 });
 
 
@@ -152,7 +168,7 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
 
 
 const verifyOtp = asyncHandler(async (req, res) => {
-    const { mobile, otp } = req.body;
+    const { mobile, otp , isAlreadyRegisterdUser} = req.body;
     console.log(req.user._id, "req.user._id")
 
     // Check if both mobile and OTP are provided
@@ -191,9 +207,22 @@ const verifyOtp = asyncHandler(async (req, res) => {
             message: "OTP has expired. Please request a new OTP.",
         });
     }
+
     otpRecord.otp = "";
     await otpRecord.save(); // Save the updated OTP record
 
+    if(isAlreadyRegisterdUser){
+       const userDetails = await User.findOne({mobile})
+       const token = generateToken(res, userDetails._id)
+        console.log("token---->", token)
+        // Respond with a success message
+        return res.json({
+            success: true,
+            message:"User login sucessfully!",
+            token: token
+        });
+    }
+   
     // update in user model
     const result = await User.findByIdAndUpdate(
         req.user._id,
@@ -247,6 +276,9 @@ const verifyPan = asyncHandler(async (req, res) => {
 
     // add pan details in panDetails table
 
+    // await  PanDetails.create(
+    //     data : response.result
+    // );
 
 
     // Now respond with status 200 with JSON success true
@@ -506,10 +538,10 @@ const checkLoanElegblity = asyncHandler(async (req, res) => {
 
     const alredyApplied = await LoanApplication.findOne({ userId });
     if (alredyApplied && alredyApplied.status === "PENDING") {
-        return res.status(200).json({ message: "You have already applied for loan", isElegble: false });
+        return res.status(200).json({ message: "You have already applied for loan", isEligible: false });
     }
 
-    return res.status(200).json({ message: "You are eligible for loan", isElegble: true });
+    return res.status(200).json({ message: "You are eligible for loan", isEligible: true });
 
 })
 

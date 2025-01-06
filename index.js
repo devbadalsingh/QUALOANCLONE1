@@ -1,6 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import cors from "cors"; // Import cors
+import cors from "cors";
 import connectDB from "./config/db.js";
 import "dotenv/config.js";
 import morgan from "morgan";

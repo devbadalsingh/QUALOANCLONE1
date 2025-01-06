@@ -13,8 +13,8 @@ const uploadFields = upload.fields([
 router.post("/calculateLoan",authMiddleware, calculateLoan);
 router.patch("/addEmploymentInfo",authMiddleware, addEmploymentInfo);
 router.patch("/uploadBankStatement",authMiddleware,uploadFields, uploadBankStatement);
-router.patch("/uploadDocuments",authMiddleware,uploadFields, uploadDocuments); 
-router.patch("/disbursalBankDetails",authMiddleware, disbursalBankDetails);   
+router.patch("/uploadDocuments",authMiddleware,uploadFields, uploadDocuments); // pending
+router.patch("/disbursalBankDetails",authMiddleware, disbursalBankDetails);   // pending
 router.get("/getApplicationStatus",authMiddleware, getApplicationStatus);
 router.get("/getApplicationDetails", authMiddleware, getApplicationDetails);
 

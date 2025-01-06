@@ -70,10 +70,10 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Employment Info added successfully" });
 });
 
-
+// Pending
 const uploadBankStatement = asyncHandler(async (req, res) => { });
 
-
+// Pending
 const uploadDocuments = asyncHandler(async (req, res) => { });
 
 

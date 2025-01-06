@@ -4,7 +4,6 @@ import {
     generatePresignedUrl,
 } from "../config/uploadFilesToS3.js";
 import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js";
-import Lead from "../models/Leads.js";
 import Documents from "../models/Documents.js";
 
 export const uploadDocs = async (docs, files, remarks, options = {}) => {
