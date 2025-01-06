@@ -13,6 +13,7 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
     const  pan  = user.PAN;
     const remarks = req.body.remarks;
 
+    
     if (!req.files) {
         return res.status(400).json({ message: "No files uploaded" });
     }

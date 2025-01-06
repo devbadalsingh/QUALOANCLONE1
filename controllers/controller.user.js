@@ -86,10 +86,9 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
         const details = response.model;
         const name = details.name.split(" ");
         const aadhaarNumber = details.adharNumber.slice(-4);
-        const uniqueId = `${name[0].toLowerCase()}${aadhaarNumber}`;
 
-        const existingAadhaar = await AadhaarDetails.findOne({
-            uniqueId: uniqueId,
+        const existingAadhaar = await User.findOne({
+            aadarNumber: details.adharNumber,
         });
 
         if (existingAadhaar) {
