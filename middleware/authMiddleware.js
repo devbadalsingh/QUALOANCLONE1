@@ -17,7 +17,7 @@ const authMiddleware = asyncHandler( async (req, res, next) => {
         req.user = await User.findById(decoded.id)
         if (!req.user) {
             res.status(404);
-            throw new Error("Employee not found");
+            throw new Error("User not found");
         }
         if (!req.user.isActive) {
             res.status(401);

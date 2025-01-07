@@ -41,7 +41,7 @@ app.use(homeMiddleware); // Auth middleware
 app.use(morgan("dev")); // Log HTTP requests
 
 // main routes (Done)
-app.get('/api', homeMiddleware , (req, res) => {
+app.get('/home', homeMiddleware , (req, res) => {
     console.log(req.user, "req.user");
     console.log(req.isAuthenticated,"req.isAuthenticated");
     const data = {
