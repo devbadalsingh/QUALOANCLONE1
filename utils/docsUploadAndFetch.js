@@ -2,6 +2,7 @@ import {
     uploadFilesToS3,
     deleteFilesFromS3,
 } from "../config/uploadFilesToS3.js";
+import Documents from "../models/model.document.js";
 
 export const uploadDocs = async (docs, files, remarks) => {
     const singleDocUpdates = [];

@@ -26,7 +26,7 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
     let docs = await Documents.findOne({ pan });
     if (!docs) {
         // Create a new document entry if it doesn't exist
-        docs = new Documents({
+        docs = await Documents.create({
             pan,
             document: { singleDocuments: [], multipleDocuments: {} },
         });
@@ -34,6 +34,7 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
 
     // Upload and update the documents
     const result = await uploadDocs(docs, req.files, remarks);
+    console.log("result" , result)
 
     if (!result.success) {
         return res.status(400).json({ message: "Failed to store documents." });
