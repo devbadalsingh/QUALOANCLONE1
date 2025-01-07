@@ -59,6 +59,7 @@ app.use("/api/verify", verifyRoute);
 app.use("/api/loanApplication", loanApplicationRoute);
 
 
+
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);

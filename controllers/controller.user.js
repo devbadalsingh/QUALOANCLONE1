@@ -547,7 +547,7 @@ const checkLoanElegblity = asyncHandler(async (req, res) => {
     }
 
     if (!user.isCompleteRegistration) {
-        return res.status(200).json({ message: "Please Complete Profile First", isElegble: user.isCompleteRegistration });
+        return res.status(200).json({ message: "Please Complete Profile First", isEligible: user.isCompleteRegistration });
     }
 
     const alredyApplied = await LoanApplication.findOne({ userId });
@@ -559,5 +559,16 @@ const checkLoanElegblity = asyncHandler(async (req, res) => {
 
 })
 
+// logout API
+const logout  = asyncHandler (async(req,res)=>{
+    res.cookie('jwt', '', {
+        httpOnly: true,
+        expires: new Date(0)
+    })
+    res.status(200).json({ message: 'Logged out successfully' })
+})
 
-export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails, checkLoanElegblity, verifyOtp }
+
+
+
+export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails, checkLoanElegblity, verifyOtp ,logout}

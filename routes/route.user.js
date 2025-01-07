@@ -1,5 +1,5 @@
 import express from "express";
-import { aadhaarOtp , saveAadhaarDetails, personalInfo ,currentResidence ,addIncomeDetails,uploadProfile, getProfile , getProfileDetails, getDashboardDetails, checkLoanElegblity} from "../controllers/controller.user.js";  
+import { aadhaarOtp , saveAadhaarDetails, personalInfo ,currentResidence ,addIncomeDetails,uploadProfile, getProfile , getProfileDetails, getDashboardDetails, checkLoanElegblity , logout} from "../controllers/controller.user.js";  
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
 const router = express.Router();
@@ -24,7 +24,8 @@ router.get("/getProfileDetails" , authMiddleware ,getProfileDetails);
 router.get("/getDashboardDetails" , authMiddleware ,getDashboardDetails);
 router.get("/checkLoanElegblity" , authMiddleware ,checkLoanElegblity);
 
-
+// logout
+router.post("/logout" , authMiddleware , logout)
 
 
 export default router;
