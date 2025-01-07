@@ -20,7 +20,13 @@ const app = express();
 // Middleware
 // CORS configuration
 var corsOption = {
-    origin: '*',
+    origin: [
+        "https://www.qualoan.com",
+        "https://qualoan.com",
+        "http://localhost:5173",
+        "https://www.crm.qualoan.com",
+        "https://crm.qualoan.com",
+    ],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials : true
 };
@@ -53,6 +59,7 @@ app.get('/api', homeMiddleware , (req, res) => {
 app.use("/api/user", userRoute);
 app.use("/api/verify", verifyRoute);
 app.use("/api/loanApplication", loanApplicationRoute);
+
 
 // Error handling middleware
 app.use(notFound);

@@ -54,10 +54,10 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
     const response = await generateAadhaarOtp(aadhaar);
     // res.render('otpRequest',);
 
-    return res.json({
+    return res.status(200).json({
         success: true,
         message:"OTP sent successfully to your Adhaar linked mobile number",
-        isAlreadyRegisterdUser:true,
+        isAlreadyRegisterdUser:false,
         transactionId: response.data.model.transactionId,
         fwdp: response.data.model.fwdp,
         codeVerifier: response.data.model.codeVerifier,
@@ -98,7 +98,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
             );
             const token = generateToken(res, UserData._id)
             console.log("token--->", token)
-            return res.json({
+            return res.status(200).json({
                 success: true,
                 token: token,
             });
@@ -123,7 +123,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
         const token = generateToken(res, userDetails._id)
         console.log("token---->", token)
         // Respond with a success message
-        return res.json({
+        return res.status(200).json({
             success: true,
             token: token
         });

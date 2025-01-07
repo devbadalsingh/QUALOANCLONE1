@@ -17,8 +17,8 @@ export const uploadDocs = async (docs, files, remarks) => {
         const isSingleType = [
             "aadhaarFront",
             "aadhaarBack",
+            "eAadhaar",
             "panCard",
-            "sanctionLetter",
         ].includes(fieldName);
 
         if (isSingleType) {
