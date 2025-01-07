@@ -53,6 +53,12 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
     // Call the function to generate OTP using Aaadhaar number
     const response = await generateAadhaarOtp(aadhaar);
     // res.render('otpRequest',);
+    console.log(response , "response --->")
+
+    if(!response || !response.data || !response.data.model){
+        return res.status(400).json({message :"Aadhar API issue"})
+
+    }
 
     return res.status(200).json({
         success: true,
@@ -170,7 +176,6 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
 
 const verifyOtp = asyncHandler(async (req, res) => {
     const { mobile, otp , isAlreadyRegisterdUser} = req.body;
-    console.log(req.user._id, "req.user._id")
 
     // Check if both mobile and OTP are provided
     if (!mobile && !otp) {
@@ -213,7 +218,9 @@ const verifyOtp = asyncHandler(async (req, res) => {
     await otpRecord.save(); // Save the updated OTP record
 
     if(isAlreadyRegisterdUser){
-       const userDetails = await User.findOne({mobile})
+       const userDetails = await User.findOne({"personalDetails.mobile":mobile})
+       console.log("user details-->", userDetails)
+       console.log("user id" , userDetails._id)
        const token = generateToken(res, userDetails._id)
         console.log("token---->", token)
         // Respond with a success message
@@ -225,8 +232,8 @@ const verifyOtp = asyncHandler(async (req, res) => {
     }
    
     // update in user model
-    const result = await User.findByIdAndUpdate(
-        req.user._id,
+    const result = await User.findOneAndUpdate(
+        {"personalDetails.mobile": mobile},
         { registrationStatus: "MOBILE_VERIFIED", "personalDetails.mobile": mobile },
         { new: true }
     );
