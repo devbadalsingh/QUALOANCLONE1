@@ -20,7 +20,7 @@ router.patch("/uploadProfile", authMiddleware ,uploadFields, uploadProfile);
 
 // Dashboard APIs
 router.get("/getProfile" , authMiddleware ,getProfile);  
-router.get("/getProfileDetails" , authMiddleware ,getProfileDetails);  
+router.get("/getProfileDetails" , authMiddleware ,getProfileDetails);
 router.get("/getDashboardDetails" , authMiddleware ,getDashboardDetails);
 router.get("/checkLoanElegblity" , authMiddleware ,checkLoanElegblity);
 

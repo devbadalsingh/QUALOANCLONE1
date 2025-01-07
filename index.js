@@ -35,7 +35,6 @@ app.use(cors(corsOption));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); //cookie parser middlerware
-app.use(homeMiddleware); // Auth middleware
 
 // Logging middleware (optional)
 app.use(morgan("dev")); // Log HTTP requests
