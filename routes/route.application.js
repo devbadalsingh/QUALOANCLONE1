@@ -8,6 +8,7 @@ const router = express.Router();
 const uploadFields = upload.fields([
     { name: "aadhaarFront", maxCount: 1 },
     { name: "aadhaarBack", maxCount: 1 },
+    {name :"eAadhaar" , maxCount :1},
     { name: "panCard", maxCount: 1 },
     { name: "bankStatement", maxCount: 10 },
     { name: "salarySlip", maxCount: 10 },
