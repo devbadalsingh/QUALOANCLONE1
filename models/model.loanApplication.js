@@ -125,6 +125,19 @@ const applicationSchema = new mongoose.Schema({
         ],
     },
 
+    previousJourney:{
+        type: String,
+        default: "CALCULATED",
+        enum: [
+            "CALCULATED",
+            "EMPLOYMENT_DETAILS_SAVED",
+            "BANK_STATEMENT_FETCHED",
+            "DOCUMENTS_SAVED",
+            "DISBURSAL_DETAILS_SAVED",
+            "COMPLETED",
+        ],
+    },
+
     applicationStatus: {
         type: String,
         default: 'PENDING',

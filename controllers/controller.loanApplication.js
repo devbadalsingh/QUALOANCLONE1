@@ -79,13 +79,34 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
         });
     }
 
+    const loanDetails = await LoanApplication.findOneAndUpdate(
+        { userId: userId , applicationStatus:"PENDING" }
+    )
+
+    if(!loanDetails){
+        return res.status(400).json({message:"Loan Application not found"})
+    }
+
+    let progressStatus
+    let previousJourney
+    if(loanDetails.progressStatus=="CALCULATED"){
+        progressStatus = "EMPLOYMENT_DETAILS_SAVED",
+        previousJourney = "CALCULATED"
+    }
+
+    if(loanDetails.progressStatus!="CALCULATED"){
+        progressStatus = loanDetails.progressStatus,
+        previousJourney = loanDetails.previousJourney
+    }
+
 
     const addEmploymentInfo = await LoanApplication.findOneAndUpdate(
         { userId: userId , applicationStatus:"PENDING" },
         {
             $set: {
                 employeeDetails: employeInfo,
-                progressStatus: "EMPLOYMENT_DETAILS_SAVED"
+                progressStatus: progressStatus,
+                previousJourney: previousJourney
             }
         },
 
@@ -109,12 +130,36 @@ const disbursalBankDetails = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Invalid input" });
     }
 
+
+    const loanDetails = await LoanApplication.findOneAndUpdate(
+        { userId: userId , applicationStatus:"PENDING" }
+    )
+
+    if(!loanDetails){
+        return res.status(400).json({message:"Loan Application not found"})
+    }
+
+    let progressStatus
+    let previousJourney
+    if(loanDetails.progressStatus=="DOCUMENTS_SAVED"){
+        progressStatus = "COMPLETED",
+        previousJourney = "DISBURSAL_DETAILS_SAVED"
+    }
+
+    if(loanDetails.progressStatus!="DOCUMENTS_SAVED"){
+        progressStatus = loanDetails.progressStatus,
+        previousJourney = loanDetails.previousJourney
+    }
+
+
     const addBankDetails = await LoanApplication.findOneAndUpdate(
         { userId: userId },
         {
             $set: {
                 disbursalBankDetails: bankDetails,
-                progressStatus: "DISBURSAL_DETAILS_SAVED"
+                progressStatus: progressStatus,
+                previousJourney: previousJourney
+
             }
         },
 
@@ -151,8 +196,7 @@ const getApplicationStatus = asyncHandler(async (req, res) => {
 const getApplicationDetails = asyncHandler(async (req, res) => {
     const userId = req.user._id;
     const { applicationStatus } = req.query;
-    console.log(applicationStatus, "<--applicationStatus");
-
+   
     if (!userId) {
         return res.status(400).json({ message: "Invalid input" });
     }

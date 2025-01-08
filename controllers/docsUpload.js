@@ -2,6 +2,7 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Documents from "../models/model.document.js";
 import { uploadDocs } from "../utils/docsUploadAndFetch.js";
 import User from "../models/model.user.js"
+import LoanApplication from "../models/model.loanApplication.js";
 
 export const uploadDocuments = asyncHandler(async (req, res) => {
     const userId = req.user._id
@@ -34,11 +35,67 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
 
     // Upload and update the documents
     const result = await uploadDocs(docs, req.files, remarks);
-    console.log("result" , result)
 
     if (!result.success) {
         return res.status(400).json({ message: "Failed to store documents." });
     }
 
-    res.json({ message: "Documents uploaded successfully", documents: result.updatedDocs });
+    const loanDetails = await LoanApplication.findOne(
+        { userId: userId , applicationStatus:"PENDING" }
+    )
+
+    if(!loanDetails){
+        return res.status(400).json({message:"Loan Application not found"})
+    }
+
+    let progressStatus
+    let previousJourney
+
+    if(loanDetails.progressStatus=="EMPLOYMENT_DETAILS_SAVED"){
+        progressStatus = "BANK_STATEMENT_FETCHED",
+        previousJourney = "EMPLOYMENT_DETAILS_SAVED"
+    }
+    if(loanDetails.progressStatus=="BANK_STATEMENT_FETCHED"){
+        progressStatus = "DOCUMENTS_SAVED",
+        previousJourney = "BANK_STATEMENT_FETCHED"
+    }
+    if(loanDetails.progressStatus!="EMPLOYMENT_DETAILS_SAVED" && loanDetails.progressStatus!="BANK_STATEMENT_FETCHED"){
+        progressStatus = loanDetails.progressStatus,
+        previousJourney = loanDetails.previousJourney
+    }
+
+    if(req.files.bankStatement){
+
+        if(loanDetails.progressStatus=="EMPLOYMENT_DETAILS_SAVED"){
+            progressStatus = "BANK_STATEMENT_FETCHED",
+            previousJourney = "EMPLOYMENT_DETAILS_SAVED"
+        }
+
+        if(loanDetails.progressStatus!="EMPLOYMENT_DETAILS_SAVED" && loanDetails.progressStatus!="BANK_STATEMENT_FETCHED"){
+            progressStatus = loanDetails.progressStatus,
+            previousJourney = loanDetails.previousJourney
+        }
+    }
+    
+
+    const addDocs = await LoanApplication.findOneAndUpdate(
+        { userId: userId , applicationStatus:"PENDING"},
+        {
+            $set: {
+                progressStatus: progressStatus,
+                previousJourney: previousJourney
+            }
+        },
+
+        {
+            new: true
+
+        }
+    );
+
+    if(!addDocs){
+        return res.status(400).json({message:"Loan Application not updated"})
+    }
+   
+    return res.json({ message: "Documents uploaded successfully", status : addDocs.progressStatus });
 });

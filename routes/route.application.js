@@ -17,12 +17,12 @@ const uploadFields = upload.fields([
 
 
 // LoanApplication APIs
-router.post("/applyLoan", authMiddleware, calculateLoan);
-router.patch("/addEmploymentInfo", authMiddleware, addEmploymentInfo);
-router.patch("/uploadDocuments", authMiddleware, uploadFields, uploadDocuments);
-router.patch("/disbursalBankDetails", authMiddleware, disbursalBankDetails);
-router.get("/getApplicationStatus", authMiddleware, getApplicationStatus);
-router.get("/getApplicationDetails", authMiddleware, getApplicationDetails);
+router.post("/applyLoan", authMiddleware, calculateLoan);  
+router.patch("/addEmploymentInfo", authMiddleware, addEmploymentInfo); 
+router.patch("/uploadDocuments", authMiddleware, uploadFields, uploadDocuments);  
+router.patch("/disbursalBankDetails", authMiddleware, disbursalBankDetails); 
+router.get("/getApplicationStatus", authMiddleware, getApplicationStatus);  
+router.get("/getApplicationDetails", authMiddleware, getApplicationDetails);  
 
 
 export default router;

@@ -9,20 +9,20 @@ const uploadFields = upload.fields([
 
 
 // login with aadhar
-router.route("/aadhaar-login/:aadhaar").get(aadhaarOtp);   
-router.post("/submit-aadhaar-otp", saveAadhaarDetails);   
+router.route("/aadhaar-login/:aadhaar").get(aadhaarOtp);     
+router.post("/submit-aadhaar-otp", saveAadhaarDetails);    
 
 // Profile APIs    
 router.patch("/personalInfo", authMiddleware , personalInfo);  
-router.patch("/currentResidence", authMiddleware , currentResidence);   
-router.patch("/addIncomeDetails", authMiddleware , addIncomeDetails);  
-router.patch("/uploadProfile", authMiddleware ,uploadFields, uploadProfile);  
+router.patch("/currentResidence", authMiddleware , currentResidence);  
+router.patch("/addIncomeDetails", authMiddleware , addIncomeDetails);   
+router.patch("/uploadProfile", authMiddleware ,uploadFields, uploadProfile);   
 
 // Dashboard APIs
-router.get("/getProfile" , authMiddleware ,getProfile);  
-router.get("/getProfileDetails" , authMiddleware ,getProfileDetails);
-router.get("/getDashboardDetails" , authMiddleware ,getDashboardDetails);
-router.get("/checkLoanElegblity" , authMiddleware ,checkLoanElegblity);
+router.get("/getProfile" , authMiddleware ,getProfile);   
+router.get("/getProfileDetails" , authMiddleware ,getProfileDetails);  
+router.get("/getDashboardDetails" , authMiddleware ,getDashboardDetails);  
+router.get("/checkLoanElegblity" , authMiddleware ,checkLoanElegblity); 
 
 // logout
 router.post("/logout" , authMiddleware , logout)

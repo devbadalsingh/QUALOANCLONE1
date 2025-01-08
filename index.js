@@ -10,7 +10,6 @@ import verifyRoute from "./routes/route.verify.js";
 import loanApplicationRoute from "./routes/route.application.js";
 import { homeMiddleware } from "./middleware/authMiddleware.js";    
 
-
 const PORT = process.env.PORT || 3000;
 connectDB();
 
@@ -41,7 +40,6 @@ app.use(morgan("dev")); // Log HTTP requests
 
 // main routes (Done)
 app.get('/home', homeMiddleware , (req, res) => {
-    console.log(req.isAuthenticated,"req.isAuthenticated");
     if (req.isAuthenticated) {
         const data = {
             fullName: req.user?.personalDetails?.fullName || null,

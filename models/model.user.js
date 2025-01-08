@@ -24,13 +24,9 @@ const personalDetailsSchema = new mongoose.Schema(
 
 
 const residenceSchema = new mongoose.Schema({
-  address_line_1: {
+  address: {
     type: String,
     required: true,
-  },
-  address_line_2: {
-    type: String,
-
   },
 
   landmark: {
@@ -109,9 +105,17 @@ const userSchema = new mongoose.Schema(
 
     registrationStatus: {
       type: String,
-      enum: ["NEW","AADAR_VERIFIED", "MOBILE_VERIFIED", "PAN_VERIFIED","PERSONAL_DETAILS", "CURRENT_RESIDENCE", "INCOME_DETAILS", "UPLOAD_PROFILE","COMPLETE_DETAILS"],
+      enum: ["AADHAR_VERIFIED", "MOBILE_VERIFIED", "PAN_VERIFIED","PERSONAL_DETAILS", "CURRENT_RESIDENCE", "INCOME_DETAILS", "UPLOAD_PROFILE","COMPLETE_DETAILS"],
+      default: "AADHAR_VERIFIED",
+    },
+
+    previousJourney:{
+      type: String,
+      enum: ["NEW" ,"AADHAR_VERIFIED", "MOBILE_VERIFIED", "PAN_VERIFIED","PERSONAL_DETAILS", "CURRENT_RESIDENCE", "INCOME_DETAILS", "UPLOAD_PROFILE","COMPLETE_DETAILS"],
       default: "NEW",
     },
+    
+
     isCompleteRegistration:{
       type : Boolean,
       default : false
