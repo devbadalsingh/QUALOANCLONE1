@@ -138,7 +138,6 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
     throw new Error(response.msg);
 });
 
-
 const mobileGetOtp = asyncHandler(async (req, res) => {
     const { mobile } = req.params;
     const userId = req.user._id
@@ -176,7 +175,6 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
         .status(500)
         .json({ success: false, message: "Failed to send OTP" });
 });
-
 
 const verifyOtp = asyncHandler(async (req, res) => {
     const { mobile, otp , isAlreadyRegisterdUser} = req.body;
@@ -253,7 +251,6 @@ const verifyOtp = asyncHandler(async (req, res) => {
         message: "OTP verified successfully!",
     });
 });
-
 
 const verifyPan = asyncHandler(async (req, res) => {
 
@@ -632,7 +629,6 @@ const logout  = asyncHandler (async(req,res)=>{
     })
     res.status(200).json({ message: 'Logged out successfully' })
 })
-
 
 
 export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails, checkLoanElegblity, verifyOtp ,logout}

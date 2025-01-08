@@ -49,7 +49,6 @@ const calculateLoan = asyncHandler(async (req, res) => {
 
 });
 
-
 const addEmploymentInfo = asyncHandler(async (req, res) => {
     const employeInfo = req.body;
     const userId = req.user._id;
@@ -122,7 +121,6 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Employment Info added successfully" , EmploymentInfo :addEmploymentInfo.employeeDetails });
 });
 
-
 const disbursalBankDetails = asyncHandler(async (req, res) => {
     const bankDetails = req.body;
     const userId = req.user._id;
@@ -175,7 +173,6 @@ const disbursalBankDetails = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Bank Details added successfully"  , bankDetails : addBankDetails.disbursalBankDetails});
 });
 
-
 const getApplicationStatus = asyncHandler(async (req, res) => {
     const userId = req.user._id;
    
@@ -191,7 +188,6 @@ const getApplicationStatus = asyncHandler(async (req, res) => {
 
     return res.status(200).json({ message: "Loan Application found", applicationStatus: loanDetails.applicationStatus, progressStatus: loanDetails.progressStatus });
 });
-
 
 const getApplicationDetails = asyncHandler(async (req, res) => {
     const userId = req.user._id;
@@ -227,7 +223,6 @@ const getApplicationDetails = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "sucessfully fetched", data });
 
 });
-
 
 
 export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails , disbursalBankDetails }

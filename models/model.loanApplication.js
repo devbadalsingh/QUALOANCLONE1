@@ -22,11 +22,7 @@ const employeeInfoSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    officeAddrress_Line_1: {
-        type: String,
-        required: true,
-    },
-    officeAddrress_Line_2: {
+    officeAddrress: {
         type: String,
         required: true,
     },
@@ -73,19 +69,11 @@ const loanDetailsSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    EMI: {
-        type: Number,
-        required: true
-    },
     totalPayble: {
         type: Number,
         required: true
     },
     intrestPerMonth: {
-        type: Number,
-        required: true
-    },
-    processingFee: {
         type: Number,
         required: true
     },
