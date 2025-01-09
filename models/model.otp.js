@@ -12,8 +12,6 @@ const otpSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-// Create a TTL index on the `expiresAt` field
-otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const OTP = mongoose.model('OTP', otpSchema);
 
