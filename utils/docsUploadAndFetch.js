@@ -20,6 +20,9 @@ export const uploadDocs = async (docs, files, remarks) => {
             "aadhaarBack",
             "eAadhaar",
             "panCard",
+            "utilityBill",
+            "electricityBill",
+            "landlineBill"
         ].includes(fieldName);
 
         if (isSingleType) {
@@ -54,7 +57,6 @@ export const uploadDocs = async (docs, files, remarks) => {
             for (const [index, file] of fileArray.entries()) {
                 const key = `${docs.pan}/${fieldName}/${fieldName}-${Date.now()}-${file.originalname}`;
                 const fileRemark = Array.isArray(remarks) ? remarks[index] : remarks;
-
                 const res = await uploadFilesToS3(file.buffer, key);
                 multipleDocUpdates[fieldName].push({
                     name: `${fieldName}_${index + 1}`,
