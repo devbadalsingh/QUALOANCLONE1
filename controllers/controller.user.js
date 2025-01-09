@@ -222,7 +222,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
        const userDetails = await User.findOne({"personalDetails.mobile":mobile})
        const token = generateToken(res, userDetails._id)
         // Respond with a success message
-        return res.json({
+        return res.status(200).json({
             success: true,
             message:"User login sucessfully!",
             token: token
@@ -450,8 +450,7 @@ const uploadProfile = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
     if (!req.files || !req.files.profilePicture) {
-        res.status(400);
-        return res.json({ message: "No profile picture uploaded" });
+        return res.status(400).json({ message: "No profile picture uploaded" });
     }
 
     const profilePictureFile = req.files.profilePicture[0];

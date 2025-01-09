@@ -6,14 +6,12 @@ import LoanApplication from '../models/model.loanApplication.js';
 
 const calculateLoan = asyncHandler(async (req, res) => {
     const loanDetails = req.body;
-    const { principal, EMI, totalPayble, intrestPerMonth, processingFee, tenureMonth } = loanDetails;
+    const { principal, totalPayble, intrestPerMonth, tenureMonth } = loanDetails;
 
     if (
         principal <= 0 ||
-        EMI <= 0 ||
         totalPayble <= 0 ||
         intrestPerMonth <= 0 ||
-        processingFee <= 0 ||
         tenureMonth <= 0
     ) {
         return res.status(400).json({ message: "Invalid input" });
@@ -31,7 +29,7 @@ const calculateLoan = asyncHandler(async (req, res) => {
     let previousLoanApplication = await LoanApplication.findOne({ userId: user._id });
 
     if (previousLoanApplication && previousLoanApplication.applicationStatus=="PENDING"){
-        loanApplication.loanDetails = loanDetails;
+        previousLoanApplication.loanDetails = loanDetails;
         await previousLoanApplication.save();
         return res.status(200).json({ message: "Loan Application updated successfully" });
     }
@@ -63,7 +61,7 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
         "companyName",
         "companyType",
         "designation",
-        "officeAddrress_Line_1",
+        "officeAddrress",
         "city",
         "state",
         "pincode"

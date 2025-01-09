@@ -97,5 +97,5 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
         return res.status(400).json({message:"Loan Application not updated"})
     }
    
-    return res.json({ message: "Documents uploaded successfully", status : addDocs.progressStatus });
+    return res.status(200).json({ message: "Documents uploaded successfully", status : addDocs.progressStatus });
 });
