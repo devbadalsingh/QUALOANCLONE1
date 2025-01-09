@@ -26,8 +26,8 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
     // check if aadhar is already registered then send OTP by SMS gateway
     const userDetails = await User.findOne({ aadarNumber: aadhaar })
     if (userDetails) {
-        if (userDetails.personalDetails && userDetails.personalDetails.mobile) {
-            const mobile = userDetails.personalDetails.mobile
+        if (userDetails && userDetails.mobile) {
+            const mobile = userDetails.mobile
             const otp = generateRandomNumber();
             const result = await otpSent(mobile, otp);
 
@@ -219,7 +219,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
     await otpRecord.save(); // Save the updated OTP record
 
     if(isAlreadyRegisterdUser){
-       const userDetails = await User.findOne({"personalDetails.mobile":mobile})
+       const userDetails = await User.findOne({mobile:mobile})
        const token = generateToken(res, userDetails._id)
         // Respond with a success message
         return res.status(200).json({
@@ -232,7 +232,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
     // update in user model
     const result = await User.findOneAndUpdate(
         {aadarNumber: otpRecord.aadhar},
-        { registrationStatus: "MOBILE_VERIFIED", "personalDetails.mobile": mobile , previousJourney : "AADHAR_VERIFIED" },
+        { registrationStatus: "MOBILE_VERIFIED", mobile: mobile , previousJourney : "AADHAR_VERIFIED" },
         { new: true }
     );
     console.log(result , "result")
@@ -551,6 +551,9 @@ const getProfileDetails = asyncHandler(async (req, res) => {
     }
 
     const data = {
+        mobile:user.mobile,
+        PAN:user.PAN,
+        aadhaarNumber : user.aadarNumber,
         personalDetails: user.personalDetails,
         residence: user.residenceDetails,
         incomeDetails: user.incomeDetails,

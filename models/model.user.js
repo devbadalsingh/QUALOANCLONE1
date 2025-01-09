@@ -11,7 +11,6 @@ const personalDetailsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    mobile: { type: String},
     personalEmail: {
       type: String,
     },
@@ -92,6 +91,7 @@ const userSchema = new mongoose.Schema(
     profileImage: {
       type: String,
     },
+    mobile: { type: String},
 
     personalDetails: {
       type: personalDetailsSchema,
