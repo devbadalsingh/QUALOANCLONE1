@@ -20,9 +20,9 @@ export const uploadDocs = async (docs, files, remarks) => {
             "aadhaarBack",
             "eAadhaar",
             "panCard",
-            "utilityBill",
+            "residential",
             "electricityBill",
-            "landlineBill"
+            "gasConnection"
         ].includes(fieldName);
 
         if (isSingleType) {
