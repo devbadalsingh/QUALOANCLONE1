@@ -1,5 +1,5 @@
 import express from "express";
-import { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails, disbursalBankDetails } from "../controllers/controller.loanApplication.js";
+import { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails, disbursalBankDetails , getDocumentStatus} from "../controllers/controller.loanApplication.js";
 import { uploadDocuments } from "../controllers/docsUpload.js"
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import upload from "../config/multer.js";
@@ -26,6 +26,7 @@ router.patch("/uploadDocuments", authMiddleware, uploadFields, uploadDocuments);
 router.patch("/disbursalBankDetails", authMiddleware, disbursalBankDetails);
 router.get("/getApplicationStatus", authMiddleware, getApplicationStatus);
 router.get("/getApplicationDetails", authMiddleware, getApplicationDetails);
+router.get("/getDocumentStatus" , authMiddleware , getDocumentStatus)
 
 
 export default router;

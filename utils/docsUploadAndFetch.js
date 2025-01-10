@@ -28,6 +28,7 @@ export const uploadDocs = async (docs, files, remarks) => {
         if (isSingleType) {
             const file = fileArray[0]; // Single document: process only the first file
             const key = `${docs.pan}/${fieldName}-${Date.now()}-${file.originalname}`;
+            console.log("key-->" , key)
 
             // Check if the document type already exists
             const existingDocIndex = docs.document.singleDocuments.findIndex(

@@ -1,6 +1,7 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import User from '../models/model.user.js';
 import LoanApplication from '../models/model.loanApplication.js';
+import Documents from '../models/model.document.js';
 
 
 
@@ -222,5 +223,35 @@ const getApplicationDetails = asyncHandler(async (req, res) => {
 
 });
 
+const getDocumentStatus = asyncHandler (async (req,res)=>{
+    const userId = req.user._id;
+    const userDetails = await User.findById(userId);
+    const pan = userDetails.PAN;
+    const data =  await Documents.findOne({pan:pan});
 
-export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails , disbursalBankDetails }
+    const multipleDocs = data.document.multipleDocuments;
+    const singleDocs = data.document.singleDocuments;
+  
+    // Check multiple documents
+    const multipleDocumentsStatus = {};
+    for (const [key, value] of Object.entries(multipleDocs)) {
+      multipleDocumentsStatus[key] = value.length > 0 ? 'Uploaded' : 'Not Uploaded';
+    }
+  
+    // Check single documents
+    const singleDocumentsStatus = singleDocs.map(doc => ({
+      type: doc.type,
+      status: 'Uploaded',
+    }));
+  
+    // Prepare response
+    const response = {
+      multipleDocumentsStatus,
+      singleDocumentsStatus,
+    };
+  
+    return res.status(200).json(response);
+
+})
+
+export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails , disbursalBankDetails , getDocumentStatus }
