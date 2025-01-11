@@ -11,7 +11,6 @@ const personalDetailsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    mobile: { type: String, unique: true },
     personalEmail: {
       type: String,
     },
@@ -24,13 +23,9 @@ const personalDetailsSchema = new mongoose.Schema(
 
 
 const residenceSchema = new mongoose.Schema({
-  address_line_1: {
+  address: {
     type: String,
     required: true,
-  },
-  address_line_2: {
-    type: String,
-
   },
 
   landmark: {
@@ -77,7 +72,7 @@ const incomeDetailsSchema = new mongoose.Schema({
   incomeMode:{
     type: String,
     required: true,
-    enum: ["CASH", "BANK", "cheque"],
+    enum: ["CASH", "BANK", "CHEQUE", "OTHERS"],
   }
 });
 
@@ -90,52 +85,42 @@ const userSchema = new mongoose.Schema(
       unique: true,
     },
 
-
     PAN: {
       type: String,
     },
     profileImage: {
       type: String,
     },
+    mobile: { type: String},
 
     personalDetails: {
       type: personalDetailsSchema,
     },
-    residence: {
+    residenceDetails: {
       type: residenceSchema,
     },
     incomeDetails: {
       type: incomeDetailsSchema,
     },
 
-    isAadhaarVerify: {
-      type: Boolean,
-      default: false,
+    registrationStatus: {
+      type: String,
+      enum: ["AADHAR_VERIFIED", "MOBILE_VERIFIED", "PAN_VERIFIED","PERSONAL_DETAILS", "CURRENT_RESIDENCE", "INCOME_DETAILS", "UPLOAD_PROFILE","COMPLETE_DETAILS"],
+      default: "AADHAR_VERIFIED",
     },
-    isPersonalDetailsSave: {
-      type: Boolean,
-      default: false,
+
+    previousJourney:{
+      type: String,
+      enum: ["NEW" ,"AADHAR_VERIFIED", "MOBILE_VERIFIED", "PAN_VERIFIED","PERSONAL_DETAILS", "CURRENT_RESIDENCE", "INCOME_DETAILS", "UPLOAD_PROFILE","COMPLETE_DETAILS"],
+      default: "NEW",
     },
-    isPANVerify: {
-      type: Boolean,
-      default: false,
+    
+
+    isCompleteRegistration:{
+      type : Boolean,
+      default : false
     },
-    isSaveIncomedetails: {
-      type: Boolean,
-      default: false,
-    },
-    isSaveAddress: {
-      type: Boolean,
-      default: false
-    },
-    isUploadProfile: {
-      type: Boolean,
-      default: false,
-    },
-    isMobileVerify: {
-      type: Boolean,
-      default: false,
-    },
+
     isActive: {
       type: Boolean,
       default: true,
