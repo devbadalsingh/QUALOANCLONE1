@@ -104,6 +104,8 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
                 { new: true }
             );
             const token = generateToken(res, UserData._id)
+            UserData.authToken = token
+            await UserData.save();
             return res.status(200).json({
                 success: true,
                 token: token,
@@ -127,6 +129,8 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 
         // generate token 
         const token = generateToken(res, userDetails._id)
+        userDetails.authToken = token
+        await userDetails.save();
         // Respond with a success message
         return res.status(200).json({
             success: true,
@@ -220,7 +224,11 @@ const verifyOtp = asyncHandler(async (req, res) => {
 
     if(isAlreadyRegisterdUser){
        const userDetails = await User.findOne({mobile:mobile})
+       console.log(userDetails, "userDetails")
        const token = generateToken(res, userDetails._id)
+       console.log(token, "token")
+       userDetails.authToken = token
+       await userDetails.save()
         // Respond with a success message
         return res.status(200).json({
             success: true,
@@ -546,7 +554,9 @@ const getProfile = asyncHandler(async (req, res) => {
 })
 
 const getProfileDetails = asyncHandler(async (req, res) => {
+    console.log("me controller me hu , ----->")
     const userId = req.user._id;
+    console.log(userId, "userId")
     const user = await User.findById(userId);
     if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -562,6 +572,7 @@ const getProfileDetails = asyncHandler(async (req, res) => {
         profileImage: user.profileImage,
 
     }
+    console.log(data, "data")
     return res.status(200).json({
         success: true,
         data
