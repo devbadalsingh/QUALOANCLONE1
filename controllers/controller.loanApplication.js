@@ -229,6 +229,58 @@ const getDocumentStatus = asyncHandler (async (req,res)=>{
     const pan = userDetails.PAN;
     const data =  await Documents.findOne({pan:pan});
 
+    // implementing aggregation pipeline
+
+    // const pipeline = [
+    //     {
+    //       $match: {
+    //         pan: pan
+    //       }
+    //     },
+    //     {
+    //       $project: {
+    //         multipleDocumentsStatus: {
+    //           $map: {
+    //             input: {
+    //               $objectToArray:
+    //                 "$document.multipleDocuments"
+    //             },
+    //             as: "doc",
+    //             in: {
+    //               type: "$$doc.k",
+    //               status: {
+    //                 $cond: {
+    //                   if: {
+    //                     $gt: [
+    //                       {
+    //                         $size: "$$doc.v"
+    //                       },
+    //                       0
+    //                     ]
+    //                   },
+    //                   then: "Uploaded",
+    //                   else: "Not Uploaded"
+    //                 }
+    //               }
+    //             }
+    //           }
+    //         },
+    //         singleDocumentsStatus: {
+    //           $map: {
+    //             input: "$document.singleDocuments",
+    //             as: "doc",
+    //             in: {
+    //               type: "$$doc.type",
+    //               status: "Uploaded"
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   ]
+
+    // const reults = await Documents.aggregate(pipeline); 
+    
     const multipleDocs = data.document.multipleDocuments;
     const singleDocs = data.document.singleDocuments;
   
@@ -244,7 +296,6 @@ const getDocumentStatus = asyncHandler (async (req,res)=>{
       status: 'Uploaded',
     }));
   
-    // Prepare response
     const response = {
       multipleDocumentsStatus,
       singleDocumentsStatus,

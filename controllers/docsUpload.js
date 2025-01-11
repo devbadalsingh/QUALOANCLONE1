@@ -8,13 +8,13 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
     const userId = req.user._id
 
     const user = await User.findById(userId)
-    if(!user){
-        return res.status(400).json({message:"User not Found"})
+    if (!user) {
+        return res.status(400).json({ message: "User not Found" })
     }
-    const  pan  = user.PAN;
+    const pan = user.PAN;
     const remarks = req.body.remarks;
 
-    
+
     if (!req.files) {
         return res.status(400).json({ message: "No files uploaded" });
     }
@@ -41,45 +41,45 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
     }
 
     const loanDetails = await LoanApplication.findOne(
-        { userId: userId , applicationStatus:"PENDING" }
+        { userId: userId, applicationStatus: "PENDING" }
     )
 
-    if(!loanDetails){
-        return res.status(400).json({message:"Loan Application not found"})
+    if (!loanDetails) {
+        return res.status(400).json({ message: "Loan Application not found" })
     }
 
     let progressStatus
     let previousJourney
 
-    if(loanDetails.progressStatus=="EMPLOYMENT_DETAILS_SAVED"){
+    if (loanDetails.progressStatus == "EMPLOYMENT_DETAILS_SAVED") {
         progressStatus = "BANK_STATEMENT_FETCHED",
-        previousJourney = "EMPLOYMENT_DETAILS_SAVED"
-    }
-    if(loanDetails.progressStatus=="BANK_STATEMENT_FETCHED"){
-        progressStatus = "DOCUMENTS_SAVED",
-        previousJourney = "BANK_STATEMENT_FETCHED"
-    }
-    if(loanDetails.progressStatus!="EMPLOYMENT_DETAILS_SAVED" && loanDetails.progressStatus!="BANK_STATEMENT_FETCHED"){
-        progressStatus = loanDetails.progressStatus,
-        previousJourney = loanDetails.previousJourney
-    }
-
-    if(req.files.bankStatement){
-
-        if(loanDetails.progressStatus=="EMPLOYMENT_DETAILS_SAVED"){
-            progressStatus = "BANK_STATEMENT_FETCHED",
             previousJourney = "EMPLOYMENT_DETAILS_SAVED"
+    }
+    if (loanDetails.progressStatus == "BANK_STATEMENT_FETCHED") {
+        progressStatus = "DOCUMENTS_SAVED",
+            previousJourney = "BANK_STATEMENT_FETCHED"
+    }
+    if (loanDetails.progressStatus != "EMPLOYMENT_DETAILS_SAVED" && loanDetails.progressStatus != "BANK_STATEMENT_FETCHED") {
+        progressStatus = loanDetails.progressStatus,
+            previousJourney = loanDetails.previousJourney
+    }
+
+    if (req.files.bankStatement) {
+
+        if (loanDetails.progressStatus == "EMPLOYMENT_DETAILS_SAVED") {
+            progressStatus = "BANK_STATEMENT_FETCHED",
+                previousJourney = "EMPLOYMENT_DETAILS_SAVED"
         }
 
-        if(loanDetails.progressStatus!="EMPLOYMENT_DETAILS_SAVED" && loanDetails.progressStatus!="BANK_STATEMENT_FETCHED"){
+        if (loanDetails.progressStatus != "EMPLOYMENT_DETAILS_SAVED" && loanDetails.progressStatus != "BANK_STATEMENT_FETCHED") {
             progressStatus = loanDetails.progressStatus,
-            previousJourney = loanDetails.previousJourney
+                previousJourney = loanDetails.previousJourney
         }
     }
-    
+
 
     const addDocs = await LoanApplication.findOneAndUpdate(
-        { userId: userId , applicationStatus:"PENDING"},
+        { userId: userId, applicationStatus: "PENDING" },
         {
             $set: {
                 progressStatus: progressStatus,
@@ -93,9 +93,9 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
         }
     );
 
-    if(!addDocs){
-        return res.status(400).json({message:"Loan Application not updated"})
+    if (!addDocs) {
+        return res.status(400).json({ message: "Loan Application not updated" })
     }
-   
-    return res.status(200).json({ message: "Documents uploaded successfully", status : addDocs.progressStatus });
+
+    return res.status(200).json({ message: "Documents uploaded successfully", status: addDocs.progressStatus });
 });

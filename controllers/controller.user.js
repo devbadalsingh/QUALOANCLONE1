@@ -413,6 +413,8 @@ const addIncomeDetails = asyncHandler(async (req, res) => {
         return res.status(404).json({ message: "User not found" });
     }
 
+
+
     let registrationStatus
     let previousJourney
     if(userDetails.registrationStatus=="CURRENT_RESIDENCE"){
@@ -624,7 +626,7 @@ const checkLoanElegblity = asyncHandler(async (req, res) => {
 
 })
 
-const logout  = asyncHandler (async(req,res)=>{
+const logout  = asyncHandler(async(req,res)=>{
     res.cookie('jwt', '', {
         httpOnly: true,
         expires: new Date(0)
