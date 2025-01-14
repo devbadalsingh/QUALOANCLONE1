@@ -11,6 +11,10 @@ const personalDetailsSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    maritalStatus: {
+      type: String,
+      enum : ["MARRIED", "SINGLE", "DIVORCED"],
+    },
     personalEmail: {
       type: String,
     },
