@@ -415,13 +415,10 @@ const addIncomeDetails = asyncHandler(async (req, res) => {
             previousJourney = userDetails.previousJourney
     }
 
-
     userDetails.incomeDetails = incomeDetails
     userDetails.registrationStatus = registrationStatus
     userDetails.previousJourney = previousJourney
     await userDetails.save();
-
-   
 
     res.status(200).json({ message: "Income details updated successfully", incomeDetails: userDetails.incomeDetails });
 })
@@ -608,10 +605,19 @@ const checkLoanElegblity = asyncHandler(async (req, res) => {
 })
 
 const logout = asyncHandler(async (req, res) => {
+     
+    const user = await User.findById(req.user._id);
+    if(!user){
+        return res.status(404).json({ message: "User not found" });
+    }
+    user.token = null;
+    await user.save()
+    
     res.cookie('jwt', '', {
         httpOnly: true,
         expires: new Date(0)
     })
+    
     res.status(200).json({ message: 'Logged out successfully' })
 })
 
