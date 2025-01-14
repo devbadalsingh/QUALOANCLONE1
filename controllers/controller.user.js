@@ -35,11 +35,11 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
                 // Update or create the OTP record for the mobile number
                 await OTP.findOneAndUpdate(
                     { mobile },
-                    { otp , aadhaar },
+                    { otp, aadhaar },
                     { upsert: true, new: true }
                 );
 
-                return res.status(200).json({ success: true, isAlreadyRegisterdUser:true,mobileNumber:mobile, message: "OTP sent successfully to your register mobile number"});
+                return res.status(200).json({ success: true, isAlreadyRegisterdUser: true, mobileNumber: mobile, message: "OTP sent successfully to your register mobile number" });
             }
 
             return res
@@ -54,15 +54,15 @@ const aadhaarOtp = asyncHandler(async (req, res) => {
     const response = await generateAadhaarOtp(aadhaar);
     // res.render('otpRequest',);
 
-    if(!response || !response.data || !response.data.model){
-        return res.status(400).json({message :"Aadhar API issue"})
+    if (!response || !response.data || !response.data.model) {
+        return res.status(400).json({ message: "Aadhar API issue" })
 
     }
 
     return res.status(200).json({
         success: true,
-        message:"OTP sent successfully to your Adhaar linked mobile number",
-        isAlreadyRegisterdUser:false,
+        message: "OTP sent successfully to your Adhaar linked mobile number",
+        isAlreadyRegisterdUser: false,
         transactionId: response.data.model.transactionId,
         fwdp: response.data.model.fwdp,
         codeVerifier: response.data.model.codeVerifier,
@@ -145,7 +145,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
 const mobileGetOtp = asyncHandler(async (req, res) => {
     const { mobile } = req.params;
     const userId = req.user._id
-     
+
     if (!mobile) {
         return res.status(400).json({ message: "Mobile number is required" });
     }
@@ -157,7 +157,7 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
     }
 
     const user = await User.findById(userId)
-    if(!user){
+    if (!user) {
         return res.status(400).json({ message: "User not found" });
     }
 
@@ -168,7 +168,7 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
         // Update or create the OTP record for the mobile number
         await OTP.findOneAndUpdate(
             { mobile },
-            { otp , aadhar:user.aadarNumber },
+            { otp, aadhar: user.aadarNumber },
             { upsert: true, new: true }
         );
 
@@ -181,7 +181,7 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
 });
 
 const verifyOtp = asyncHandler(async (req, res) => {
-    const { mobile, otp , isAlreadyRegisterdUser} = req.body;
+    const { mobile, otp, isAlreadyRegisterdUser } = req.body;
 
     // Check if both mobile and OTP are provided
     if (!mobile && !otp) {
@@ -222,31 +222,31 @@ const verifyOtp = asyncHandler(async (req, res) => {
     otpRecord.otp = "";
     await otpRecord.save(); // Save the updated OTP record
 
-    if(isAlreadyRegisterdUser){
-       const userDetails = await User.findOne({mobile:mobile})
-       console.log(userDetails, "userDetails")
-       const token = generateToken(res, userDetails._id)
-       console.log(token, "token")
-       userDetails.authToken = token
-       await userDetails.save()
+    if (isAlreadyRegisterdUser) {
+        const userDetails = await User.findOne({ mobile: mobile })
+        console.log(userDetails, "userDetails")
+        const token = generateToken(res, userDetails._id)
+        console.log(token, "token")
+        userDetails.authToken = token
+        await userDetails.save()
         // Respond with a success message
         return res.status(200).json({
             success: true,
-            message:"User login sucessfully!",
+            message: "User login sucessfully!",
             token: token
         });
     }
-   
+
     // update in user model
     const result = await User.findOneAndUpdate(
-        {aadarNumber: otpRecord.aadhar},
-        { registrationStatus: "MOBILE_VERIFIED", mobile: mobile , previousJourney : "AADHAR_VERIFIED" },
+        { aadarNumber: otpRecord.aadhar },
+        { registrationStatus: "MOBILE_VERIFIED", mobile: mobile, previousJourney: "AADHAR_VERIFIED" },
         { new: true }
     );
-    console.log(result , "result")
+    console.log(result, "result")
 
 
-    if(!result){
+    if (!result) {
         return res.status(400).json({
             success: false,
             message: "OTP not verified",
@@ -290,7 +290,7 @@ const verifyPan = asyncHandler(async (req, res) => {
     // update in user table 
     await User.findByIdAndUpdate(
         userId,
-        { registrationStatus: "PAN_VERIFIED", previousJourney:"MOBILE_VERIFIED", PAN: pan },
+        { registrationStatus: "PAN_VERIFIED", previousJourney: "MOBILE_VERIFIED", PAN: pan },
         { new: true }
     );
 
@@ -302,7 +302,7 @@ const verifyPan = asyncHandler(async (req, res) => {
                 { "data.pan": pan }, // Check if data.pan matches
             ],
         },
-        { data:response.result }, // Update data
+        { data: response.result }, // Update data
         { upsert: true, new: true } // Create a new record if not found
     );
 
@@ -335,32 +335,22 @@ const personalInfo = asyncHandler(async (req, res) => {
 
     let registrationStatus
     let previousJourney
-    if(userDetails.registrationStatus=="PAN_VERIFIED"){
+    if (userDetails.registrationStatus == "PAN_VERIFIED") {
         registrationStatus = "PERSONAL_DETAILS",
-        previousJourney = "PAN_VERIFIED"
+            previousJourney = "PAN_VERIFIED"
     }
 
-    if(userDetails.registrationStatus!="PAN_VERIFIED"){
+    if (userDetails.registrationStatus != "PAN_VERIFIED") {
         registrationStatus = userDetails.registrationStatus,
-        previousJourney = userDetails.previousJourney
+            previousJourney = userDetails.previousJourney
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        {
-            personalDetails,
-            registrationStatus: registrationStatus,
-            previousJourney : previousJourney
+    userDetails.personalDetails = personalDetails
+    userDetails.registrationStatus = registrationStatus
+    userDetails.previousJourney = previousJourney
+    await userDetails.save();
 
-        },
-        { new: true }
-    );
-
-    if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-    }
-
-    return res.status(200).json({ message: "Personal details updated successfully", user: updatedUser.personalDetails });
+    return res.status(200).json({ message: "Personal details updated successfully", user: userDetails.personalDetails });
 
 });
 
@@ -376,34 +366,24 @@ const currentResidence = asyncHandler(async (req, res) => {
 
     let registrationStatus
     let previousJourney
-    if(userDetails.registrationStatus=="PERSONAL_DETAILS"){
+    if (userDetails.registrationStatus == "PERSONAL_DETAILS") {
         registrationStatus = "CURRENT_RESIDENCE",
-        previousJourney = "PERSONAL_DETAILS"
+            previousJourney = "PERSONAL_DETAILS"
     }
 
-    if(userDetails.registrationStatus!="PERSONAL_DETAILS"){
+    if (userDetails.registrationStatus != "PERSONAL_DETAILS") {
         registrationStatus = userDetails.registrationStatus,
-        previousJourney = userDetails.previousJourney
+            previousJourney = userDetails.previousJourney
     }
 
 
-    const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        {
-            $set: {
-                residenceDetails,
-                registrationStatus: registrationStatus,
-                previousJourney : previousJourney
-            }
-        },
-        { new: true }
-    );
+    userDetails.residenceDetails = residenceDetails
+    userDetails.registrationStatus = registrationStatus
+    userDetails.previousJourney = previousJourney
+    await userDetails.save();
 
-    if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-    }
 
-    res.status(200).json({ message: "Personal details updated successfully", residenceDetails: updatedUser.residenceDetails });
+    res.status(200).json({ message: "Personal details updated successfully", residenceDetails: userDetails.residenceDetails });
 
 })
 
@@ -425,35 +405,25 @@ const addIncomeDetails = asyncHandler(async (req, res) => {
 
     let registrationStatus
     let previousJourney
-    if(userDetails.registrationStatus=="CURRENT_RESIDENCE"){
+    if (userDetails.registrationStatus == "CURRENT_RESIDENCE") {
         registrationStatus = "INCOME_DETAILS",
-        previousJourney = "CURRENT_RESIDENCE"
+            previousJourney = "CURRENT_RESIDENCE"
     }
 
-    if(userDetails.registrationStatus!="CURRENT_RESIDENCE"){
+    if (userDetails.registrationStatus != "CURRENT_RESIDENCE") {
         registrationStatus = userDetails.registrationStatus,
-        previousJourney = userDetails.previousJourney
+            previousJourney = userDetails.previousJourney
     }
 
 
-    const updatedUser = await
-        User.findByIdAndUpdate(
-            userId,
-            {
-                $set: {
-                    incomeDetails,
-                    registrationStatus: registrationStatus,
-                    previousJourney : previousJourney
-                }
-            },
-            { new: true }
-        );
+    userDetails.incomeDetails = incomeDetails
+    userDetails.registrationStatus = registrationStatus
+    userDetails.previousJourney = previousJourney
+    await userDetails.save();
 
-    if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-    }
+   
 
-    res.status(200).json({ message: "Income details updated successfully", incomeDetails: updatedUser.incomeDetails });
+    res.status(200).json({ message: "Income details updated successfully", incomeDetails: userDetails.incomeDetails });
 })
 
 const uploadProfile = asyncHandler(async (req, res) => {
@@ -497,16 +467,16 @@ const uploadProfile = asyncHandler(async (req, res) => {
     let registrationStatus
     let previousJourney
     let isCompleteRegistration
-    if(user.registrationStatus=="INCOME_DETAILS"){
+    if (user.registrationStatus == "INCOME_DETAILS") {
         registrationStatus = "COMPLETE_DETAILS",
-        previousJourney = "UPLOAD_PROFILE",
-        isCompleteRegistration = true
+            previousJourney = "UPLOAD_PROFILE",
+            isCompleteRegistration = true
     }
 
-    if(user.registrationStatus!="INCOME_DETAILS"){
+    if (user.registrationStatus != "INCOME_DETAILS") {
         registrationStatus = user.registrationStatus,
-        previousJourney = user.previousJourney,
-        isCompleteRegistration = user.isCompleteRegistration
+            previousJourney = user.previousJourney,
+            isCompleteRegistration = user.isCompleteRegistration
     }
 
 
@@ -515,10 +485,10 @@ const uploadProfile = asyncHandler(async (req, res) => {
             userId,
             {
                 $set: {
-                    profileImage:uploadResult.Location,
-                    isCompleteRegistration : isCompleteRegistration,
+                    profileImage: uploadResult.Location,
+                    isCompleteRegistration: isCompleteRegistration,
                     registrationStatus: registrationStatus,
-                    previousJourney : previousJourney
+                    previousJourney: previousJourney
                 }
             },
             { new: true }
@@ -563,9 +533,9 @@ const getProfileDetails = asyncHandler(async (req, res) => {
     }
 
     const data = {
-        mobile:user.mobile,
-        PAN:user.PAN,
-        aadhaarNumber : user.aadarNumber,
+        mobile: user.mobile,
+        PAN: user.PAN,
+        aadhaarNumber: user.aadarNumber,
         personalDetails: user.personalDetails,
         residence: user.residenceDetails,
         incomeDetails: user.incomeDetails,
@@ -637,7 +607,7 @@ const checkLoanElegblity = asyncHandler(async (req, res) => {
 
 })
 
-const logout  = asyncHandler(async(req,res)=>{
+const logout = asyncHandler(async (req, res) => {
     res.cookie('jwt', '', {
         httpOnly: true,
         expires: new Date(0)
@@ -646,4 +616,4 @@ const logout  = asyncHandler(async(req,res)=>{
 })
 
 
-export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails, checkLoanElegblity, verifyOtp ,logout}
+export { aadhaarOtp, saveAadhaarDetails, mobileGetOtp, verifyPan, getProfile, personalInfo, currentResidence, addIncomeDetails, uploadProfile, getProfileDetails, getDashboardDetails, checkLoanElegblity, verifyOtp, logout }

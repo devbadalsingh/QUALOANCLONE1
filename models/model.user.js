@@ -17,9 +17,7 @@ const personalDetailsSchema = new mongoose.Schema(
     spouseName: {
       type: String,
     }
-  },
-  { _id: false }
-);
+});
 
 
 const residenceSchema = new mongoose.Schema({
