@@ -1,8 +1,11 @@
 import {
     uploadFilesToS3,
     deleteFilesFromS3,
+    generatePresignedUrl
+
 } from "../config/uploadFilesToS3.js";
 import Documents from "../models/model.document.js";
+import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js"
 
 export const uploadDocs = async (docs, files, remarks) => {
     const singleDocUpdates = [];
@@ -94,4 +97,39 @@ export const uploadDocs = async (docs, files, remarks) => {
     }
 
     return { success: true, updatedDocs };
+};
+
+export const getDocs = async (docs, docType, docId) => {
+    // Find the specific document based on docType
+    let document;
+    const isSingleType = [
+        "aadhaarFront",
+        "aadhaarBack",
+        "eAadhaar",
+        "panCard",
+        "cibilReport",
+        "sanctionLetter",
+    ].includes(docType);
+
+    if (isSingleType) {
+        document = docs.document.singleDocuments.find(
+            (doc) => doc.type === docType
+        );
+    } else {
+        document = docs.document.multipleDocuments[docType]?.find(
+            (doc) => doc._id.toString() === docId
+        );
+    }
+
+    if (!document) {
+        throw new Error(`Document of type ${docType} not found`);
+    }
+
+    const mimeType = getMimeTypeForDocType(document.url, docType);
+
+    // Generate a pre-signed URL for this specific document
+    const preSignedUrl =  generatePresignedUrl(document.url, mimeType);
+
+
+    return { preSignedUrl, mimeType };
 };
