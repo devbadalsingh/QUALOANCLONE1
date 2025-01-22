@@ -3,6 +3,7 @@ import User from '../models/model.user.js';
 import LoanApplication from '../models/model.loanApplication.js';
 import Documents from '../models/model.document.js';
 import {getDocs} from "../utils/docsUploadAndFetch.js"
+import UserStatus from '../models/model.userStatus.js';
 
 
 
@@ -384,5 +385,15 @@ const documentPreview = asyncHandler(async (req,res)=>{
     
 })
 
+const getJourney = asyncHandler(async(req,res)=>{
+    const userId = req.user._id;
+    const journey = await UserStatus.findOne({userId: userId});
+    if(!journey){
+        return res.status(400).json({ message: "Loan Application not found" });
+    }
 
-export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails, disbursalBankDetails, getDocumentStatus ,getDocumentList , documentPreview }
+    return res.status(200).json({ message: "Loan Application journey found", journey: journey})
+});
+
+
+export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails, disbursalBankDetails, getDocumentStatus ,getDocumentList , documentPreview,getJourney }
