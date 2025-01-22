@@ -62,6 +62,12 @@ const disbursalBankSchema = new mongoose.Schema({
         required: true,
         enum: ['SAVINGS', 'CURRENT']
     },
+    branchName:{
+        type : String
+    },
+    beneficiaryName:{
+        type:String
+    }
 })
 
 const loanDetailsSchema = new mongoose.Schema({
