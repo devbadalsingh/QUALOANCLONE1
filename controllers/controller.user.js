@@ -130,6 +130,7 @@ const saveAadhaarDetails = asyncHandler(async (req, res) => {
         // generate token 
         const token = generateToken(res, userDetails._id)
         userDetails.authToken = token
+        userDetails.isAadharVerify = true
         await userDetails.save();
         // Respond with a success message
         return res.status(200).json({
@@ -181,6 +182,7 @@ const mobileGetOtp = asyncHandler(async (req, res) => {
 });
 
 const verifyOtp = asyncHandler(async (req, res) => {
+    console.log(req.body , "-----------------------><dsadvgfvgkhv")
     const { mobile, otp, isAlreadyRegisterdUser } = req.body;
 
     // Check if both mobile and OTP are provided
@@ -193,6 +195,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
 
     // Find the OTP record in the database
     const otpRecord = await OTP.findOne({ mobile: mobile });
+    console.log("dwfdgfdghj---->" , otpRecord)
 
     // Check if the record exists
     if (!otpRecord) {
@@ -228,6 +231,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
         const token = generateToken(res, userDetails._id)
         console.log(token, "token")
         userDetails.authToken = token
+        userDetails.isMobileVerify = true
         await userDetails.save()
         // Respond with a success message
         return res.status(200).json({
@@ -290,7 +294,7 @@ const verifyPan = asyncHandler(async (req, res) => {
     // update in user table 
     await User.findByIdAndUpdate(
         userId,
-        { registrationStatus: "PAN_VERIFIED", previousJourney: "MOBILE_VERIFIED", PAN: pan },
+        { registrationStatus: "PAN_VERIFIED", previousJourney: "MOBILE_VERIFIED", PAN: pan , isPanVerify:true },
         { new: true }
     );
 
@@ -348,6 +352,7 @@ const personalInfo = asyncHandler(async (req, res) => {
     userDetails.personalDetails = personalDetails
     userDetails.registrationStatus = registrationStatus
     userDetails.previousJourney = previousJourney
+    userDetails.isPersonalDetails = true
     await userDetails.save();
 
     return res.status(200).json({ message: "Personal details updated successfully", user: userDetails.personalDetails });
@@ -380,6 +385,7 @@ const currentResidence = asyncHandler(async (req, res) => {
     userDetails.residenceDetails = residenceDetails
     userDetails.registrationStatus = registrationStatus
     userDetails.previousJourney = previousJourney
+    userDetails.isCurrentResidence = true
     await userDetails.save();
 
 
@@ -418,6 +424,7 @@ const addIncomeDetails = asyncHandler(async (req, res) => {
     userDetails.incomeDetails = incomeDetails
     userDetails.registrationStatus = registrationStatus
     userDetails.previousJourney = previousJourney
+    userDetails.isIncomDetails = true
     await userDetails.save();
 
     res.status(200).json({ message: "Income details updated successfully", incomeDetails: userDetails.incomeDetails });
@@ -485,7 +492,8 @@ const uploadProfile = asyncHandler(async (req, res) => {
                     profileImage: uploadResult.Location,
                     isCompleteRegistration: isCompleteRegistration,
                     registrationStatus: registrationStatus,
-                    previousJourney: previousJourney
+                    previousJourney: previousJourney,
+                    isProfileImage :  true
                 }
             },
             { new: true }
@@ -561,6 +569,13 @@ const getDashboardDetails = asyncHandler(async (req, res) => {
             message: "Registration incomplete",
             isRegistration: true,
             registrationStatus: user.registrationStatus,
+              isAadharVerify : user.isAadharVerify,
+              isMobileVerify : user.isMobileVerify,
+              isPanVerify: user.isPanVerify,
+              isProfileImage: user.isProfileImage,
+              isPersonalDetails : user.isPersonalDetails,
+              isCurrentResidence : user.isCurrentResidence,
+              isIncomDetails  : user.isIncomDetails
         });
     }
 
@@ -581,6 +596,16 @@ const getDashboardDetails = asyncHandler(async (req, res) => {
         isRegistration: false,
         applicationStatus: loanApplication.applicationStatus,
         progressStatus: loanApplication.progressStatus,
+        isLoanCalculated : loanApplication.isLoanCalculated,
+        isEmploymentDetailsSaved: loanApplication.isLoanCalculated,
+        isDisbursalDetailsSaved: loanApplication.isDisbursalDetailsSaved,
+        isAadharVerify : user.isAadharVerify,
+        isMobileVerify : user.isMobileVerify,
+        isPanVerify: user.isPanVerify,
+        isProfileImage: user.isProfileImage,
+        isPersonalDetails : user.isPersonalDetails,
+        isCurrentResidence : user.isCurrentResidence,
+        isIncomDetails  : user.isIncomDetails
     });
 });
 

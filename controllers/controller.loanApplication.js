@@ -40,8 +40,10 @@ const calculateLoan = asyncHandler(async (req, res) => {
 
     const loanApplication = await LoanApplication.create({
         userId: user._id,
+        isLoanCalculated : true,
         loanDetails
     });
+
 
     if (!loanApplication) {
         return res.status(400).json({ message: "Loan Application not created" });
@@ -107,7 +109,8 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
             $set: {
                 employeeDetails: employeInfo,
                 progressStatus: progressStatus,
-                previousJourney: previousJourney
+                previousJourney: previousJourney,
+                isEmploymentDetailsSaved : true
             }
         },
 
@@ -158,8 +161,8 @@ const disbursalBankDetails = asyncHandler(async (req, res) => {
             $set: {
                 disbursalBankDetails: bankDetails,
                 progressStatus: progressStatus,
-                previousJourney: previousJourney
-
+                previousJourney: previousJourney,
+                isDisbursalDetailsSaved :  true
             }
         },
 

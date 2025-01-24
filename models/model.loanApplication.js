@@ -136,9 +136,19 @@ const applicationSchema = new mongoose.Schema({
         type: String,
         default: 'PENDING',
         enum: ['PENDING', 'APPROVED', 'REJECTED']
-    }
-
-
+    },
+    isLoanCalculated:{
+        type : Boolean,
+        default : false
+    },
+    isEmploymentDetailsSaved:{
+        type : Boolean,
+        default : false
+    },
+    isDisbursalDetailsSaved:{
+        type : Boolean,
+        default : false
+    },
 });
 
 const LoanApplication = mongoose.model("loanApplication", applicationSchema);
