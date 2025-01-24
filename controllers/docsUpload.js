@@ -41,7 +41,7 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
     }
 
     const loanDetails = await LoanApplication.findOne(
-        { userId: userId, applicationStatus: "PENDING" }
+        { userId: userId, applicationStatus: "PENDING"}
     )
 
     if (!loanDetails) {
@@ -83,7 +83,8 @@ export const uploadDocuments = asyncHandler(async (req, res) => {
         {
             $set: {
                 progressStatus: progressStatus,
-                previousJourney: previousJourney
+                previousJourney: previousJourney,
+                isDocumentUploaded : true 
             }
         },
 

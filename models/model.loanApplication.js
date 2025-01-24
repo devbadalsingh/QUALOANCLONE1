@@ -149,6 +149,10 @@ const applicationSchema = new mongoose.Schema({
         type : Boolean,
         default : false
     },
+    isDocumentUploaded:{
+        type : Boolean,
+        default : false
+    }
 });
 
 const LoanApplication = mongoose.model("loanApplication", applicationSchema);
