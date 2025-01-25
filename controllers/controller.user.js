@@ -490,7 +490,7 @@ const uploadProfile = asyncHandler(async (req, res) => {
             {
                 $set: {
                     profileImage: uploadResult.Location,
-                    isCompleteRegistration: isCompleteRegistration,
+                    isCompleteRegistration: true,
                     registrationStatus: registrationStatus,
                     previousJourney: previousJourney,
                     isProfileImage :  true
