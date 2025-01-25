@@ -353,7 +353,7 @@ const getDocumentList = asyncHandler(async (req, res) => {
         }
 
         // Combine both lists into one array
-        const allDocuments = [...singleDocuments, ...multipleDocuments];
+        const allDocuments = [...multipleDocuments , ...singleDocuments];
 
         return res.status(200).json({ documents: allDocuments });
     }

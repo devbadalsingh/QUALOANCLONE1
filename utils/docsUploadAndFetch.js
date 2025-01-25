@@ -10,8 +10,8 @@ import getMimeTypeForDocType from "../utils/getMimeTypeForDocType.js"
 export const uploadDocs = async (docs, files, remarks) => {
     const singleDocUpdates = [];
     const multipleDocUpdates = {
-        bankStatement: [],
         salarySlip: [],
+        bankStatement: [],
         others: [],
     };
 
