@@ -589,6 +589,8 @@ const getDashboardDetails = asyncHandler(async (req, res) => {
         });
     }
 
+    console.log("frfrewgreg--->" , loanApplication , "fgfgfhjgfgd--->")
+
     // Return the application status and progress phase
     return res.status(200).json({
         success: true,

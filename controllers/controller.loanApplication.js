@@ -2,7 +2,7 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import User from '../models/model.user.js';
 import LoanApplication from '../models/model.loanApplication.js';
 import Documents from '../models/model.document.js';
-import {getDocs} from "../utils/docsUploadAndFetch.js"
+import { getDocs } from "../utils/docsUploadAndFetch.js"
 import UserStatus from '../models/model.userStatus.js';
 
 
@@ -38,12 +38,22 @@ const calculateLoan = asyncHandler(async (req, res) => {
         return res.status(200).json({ message: "Loan Application updated successfully" });
     }
 
-    const loanApplication = await LoanApplication.create({
-        userId: user._id,
-        isLoanCalculated : true,
-        loanDetails
-    });
+    let loanApplication;
+    const isLoanAlreadyCalculated = await LoanApplication.findOne({ userId: user._id })
+    if (isLoanAlreadyCalculated) {
+        isLoanAlreadyCalculated.loanDetails = loanDetails
+        isLoanAlreadyCalculated.isLoanCalculated = true
+        await isLoanAlreadyCalculated.save()
 
+    }
+    else {
+        loanApplication = await LoanApplication.create({
+            userId: user._id,
+            isLoanCalculated: true,
+            loanDetails
+        });
+
+    }
 
     if (!loanApplication) {
         return res.status(400).json({ message: "Loan Application not created" });
@@ -110,7 +120,7 @@ const addEmploymentInfo = asyncHandler(async (req, res) => {
                 employeeDetails: employeInfo,
                 progressStatus: progressStatus,
                 previousJourney: previousJourney,
-                isEmploymentDetailsSaved : true
+                isEmploymentDetailsSaved: true
             }
         },
 
@@ -162,7 +172,7 @@ const disbursalBankDetails = asyncHandler(async (req, res) => {
                 disbursalBankDetails: bankDetails,
                 progressStatus: progressStatus,
                 previousJourney: previousJourney,
-                isDisbursalDetailsSaved :  true
+                isDisbursalDetailsSaved: true
             }
         },
 
@@ -353,7 +363,7 @@ const getDocumentList = asyncHandler(async (req, res) => {
         }
 
         // Combine both lists into one array
-        const allDocuments = [...multipleDocuments , ...singleDocuments];
+        const allDocuments = [...multipleDocuments, ...singleDocuments];
 
         return res.status(200).json({ documents: allDocuments });
     }
@@ -362,13 +372,13 @@ const getDocumentList = asyncHandler(async (req, res) => {
     return res.status(200).json({ documents: [] });
 })
 
-const documentPreview = asyncHandler(async (req,res)=>{
+const documentPreview = asyncHandler(async (req, res) => {
 
     const { docType } = req.query;
     const docId = req.query.docId;
 
     let userDetails = await User.findById(req.user._id);
-   
+
 
     if (!userDetails) {
         res.status(404);
@@ -385,18 +395,18 @@ const documentPreview = asyncHandler(async (req,res)=>{
         url: result.preSignedUrl,
         mimeType: result.mimeType,
     });
-    
+
 })
 
-const getJourney = asyncHandler(async(req,res)=>{
+const getJourney = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    const journey = await UserStatus.findOne({userId: userId});
-    if(!journey){
+    const journey = await UserStatus.findOne({ userId: userId });
+    if (!journey) {
         return res.status(400).json({ message: "Loan Application not found" });
     }
 
-    return res.status(200).json({ message: "Loan Application journey found", journey: journey})
+    return res.status(200).json({ message: "Loan Application journey found", journey: journey })
 });
 
 
-export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails, disbursalBankDetails, getDocumentStatus ,getDocumentList , documentPreview,getJourney }
+export { calculateLoan, addEmploymentInfo, getApplicationStatus, getApplicationDetails, disbursalBankDetails, getDocumentStatus, getDocumentList, documentPreview, getJourney }
