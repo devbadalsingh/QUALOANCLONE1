@@ -25,7 +25,7 @@ const userStatusSchema = new mongoose.Schema({
         default: false
 
     },
-    isLoanCompleted: {
+    isCompleted: {
         type: Boolean,
         default: false
 
