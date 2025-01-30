@@ -599,7 +599,7 @@ const getDashboardDetails = asyncHandler(async (req, res) => {
         applicationStatus: loanApplication.applicationStatus,
         progressStatus: loanApplication.progressStatus,
         isLoanCalculated : loanApplication.isLoanCalculated,
-        isEmploymentDetailsSaved: loanApplication.isLoanCalculated,
+        isEmploymentDetailsSaved: loanApplication.isEmploymentDetailsSaved,
         isDisbursalDetailsSaved: loanApplication.isDisbursalDetailsSaved,
         isDocumentUploaded : loanApplication.isDocumentUploaded,
         isAadharVerify : user.isAadharVerify,
