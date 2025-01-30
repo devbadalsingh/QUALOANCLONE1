@@ -109,6 +109,9 @@ export const getDocs = async (docs, docType, docId) => {
         "panCard",
         "cibilReport",
         "sanctionLetter",
+        "residential",
+        "electricityBill",
+        "gasConnection"
     ].includes(docType);
 
     if (isSingleType) {
